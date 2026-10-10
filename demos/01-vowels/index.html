@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo 1 · Vowels · ipa-pink-trombone</title>
+  <meta name="description" content="Drag across the IPA vowel chart and watch a vocal tract make the vowel.">
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <nav class="top">
+    <a href="/"><strong>ipa-pink-trombone</strong></a>
+    <span>Demo 1 · Vowels</span>
+    <a href="/literate/?src=demos/01-vowels/main.js">Read this demo's source</a>
+    <a href="/literate/?src=lib/vowel-map.js">Read the mapping</a>
+  </nav>
+
+  <h1>Vowels</h1>
+  <p class="tag">Press and drag on the IPA chart. Hold to sound.</p>
+  <p>The chart is a map of the tongue: left is front, right is back, top is close to the roof of the mouth,
+     bottom is open. Where two symbols share a spot, the right one has rounded lips. The dot is where your
+     pointer is; on the right, the vocal tract takes the shape that position asks for.</p>
+
+  <div class="demo-grid">
+    <section class="panel" aria-label="Vowel chart">
+      <div id="chart"></div>
+      <p class="note" style="margin-bottom:.4rem">Keyboard and touch friendly: hold any of these.</p>
+      <div id="buttons" class="vowel-buttons"></div>
+    </section>
+
+    <section class="panel" aria-label="Vocal tract">
+      <canvas id="tract" width="640" height="400" aria-label="Side view of the vocal tract"></canvas>
+      <p class="readout" id="readout" role="status" aria-live="polite">Press the chart to begin.</p>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="row">
+      <label>Rounding <input type="range" id="rounding" min="0" max="1" step="0.01" value="0"> <output id="roundingOut">spread</output></label>
+      <label>Pitch <input type="range" id="pitch" min="0" max="1" step="0.001" value="0.3"> <output id="pitchOut"></output></label>
+      <label>Voice <input type="range" id="tenseness" min="0.1" max="1" step="0.01" value="0.6"> <output id="tensenessOut"></output></label>
+    </div>
+    <div class="row" style="margin-top:.8rem">
+      <button id="playCardinal" class="primary">Play the cardinal vowels</button>
+      <button id="playAll">Play all vowels</button>
+      <button id="stop">Stop</button>
+      <button id="download">Download WAV</button>
+    </div>
+    <p class="note" id="status"></p>
+  </section>
+
+  <script type="module" src="/demos/01-vowels/main.js"></script>
+</body>
+</html>

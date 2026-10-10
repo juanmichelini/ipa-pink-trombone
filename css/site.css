@@ -87,3 +87,17 @@ input[type="range"] { accent-color: var(--pink); }
 .readout { font: .9rem var(--mono); color: var(--muted); }
 canvas { max-width: 100%; height: auto; touch-action: none; }
 .note { color: var(--muted); font-size: .95rem; }
+
+/* IPA charts */
+svg.vowel-chart { width: 100%; max-width: 30rem; height: auto; touch-action: none; user-select: none; cursor: crosshair; }
+.chart-outline { fill: var(--panel); stroke: var(--pink); stroke-width: 1.5; }
+.chart-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart-dot { fill: var(--muted); }
+.chart-symbol { font: 22px var(--ipa); fill: var(--ink); }
+.chart-symbol.active { fill: var(--pink); font-weight: 700; }
+.chart-caption { font: 12px var(--serif); fill: var(--muted); font-style: italic; }
+.chart-cursor { fill: none; stroke: var(--tongue); stroke-width: 2.5; pointer-events: none; }
+.demo-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); align-items: start; }
+.vowel-buttons { display: flex; flex-wrap: wrap; gap: .3rem; }
+.vowel-buttons button { min-width: 2.4rem; font-size: 1.15rem; padding: .25rem .45rem; }
+.vowel-buttons button.active { background: var(--pink); color: #fff; border-color: var(--pink); }
