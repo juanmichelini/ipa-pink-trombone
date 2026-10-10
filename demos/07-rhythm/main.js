@@ -60,7 +60,7 @@ function showLanes(u) {
   u.syllables.forEach((s, n) => {
     const el = document.createElement('div');
     el.style.flex = `${ds[n]} 0 0`;
-    el.style.background = s.stressed ? 'var(--pink)' : 'var(--line)';
+    el.style.background = s.stressed ? 'var(--accent-strong)' : 'var(--line)';
     el.style.color = s.stressed ? '#fff' : 'inherit';
     el.style.borderRight = '1px solid var(--bg, #fff)';
     el.style.font = '15px var(--ipa)';

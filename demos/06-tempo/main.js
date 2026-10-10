@@ -45,7 +45,7 @@ function showBars(u) {
   for (const m of u.marks) {
     const el = document.createElement('div');
     el.style.flex = `${m.end - m.start} 0 0`;
-    el.style.background = m.type === 'vowel' ? 'var(--pink)' : 'var(--muted)';
+    el.style.background = m.type === 'vowel' ? 'var(--accent-strong)' : 'var(--muted)';
     el.style.borderRight = '1px solid var(--bg, #fff)';
     el.style.color = '#fff';
     el.style.font = '14px var(--ipa)';
