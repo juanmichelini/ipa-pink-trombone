@@ -101,3 +101,12 @@ svg.vowel-chart { width: 100%; max-width: 30rem; height: auto; touch-action: non
 .vowel-buttons { display: flex; flex-wrap: wrap; gap: .3rem; }
 .vowel-buttons button { min-width: 2.4rem; font-size: 1.15rem; padding: .25rem .45rem; }
 .vowel-buttons button.active { background: var(--pink); color: #fff; border-color: var(--pink); }
+
+/* consonant table */
+.ipa-table { border-collapse: collapse; width: 100%; font-size: .8rem; }
+.ipa-table th { font-weight: 500; color: var(--muted); padding: .2rem .3rem; text-align: left; }
+.ipa-table thead th { font-size: .7rem; writing-mode: horizontal-tb; }
+.ipa-table td { border: 1px solid var(--line); text-align: center; padding: .1rem; min-width: 2.2rem; }
+.ipa-cell { font: 1.25rem var(--ipa); min-width: 2rem; padding: .15rem .3rem; margin: .05rem; }
+.ipa-cell.active, .ipa-cell.playing { background: var(--pink); color: #fff; }
+.table-wrap { overflow-x: auto; }
