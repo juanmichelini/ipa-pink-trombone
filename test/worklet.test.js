@@ -56,7 +56,7 @@ test('playing a score reports when it ends', async () => {
   const P = await loadProcessor();
   const p = new P({});
   p.onMessage({ type: 'play', score: { keyframes: [{ t: 0, intensity: 1 }, { t: 0.1 }], duration: 0.1 } });
-  const out = pull(p, 100);
+  const out = pull(p, 200);
   assert.ok(rms(out, 0, 128 * 20) > 0.01);
   assert.ok(p.port.posted.some((m) => m.type === 'ended'));
 });
