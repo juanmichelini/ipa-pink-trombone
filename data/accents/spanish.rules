@@ -1,0 +1,30 @@
+@name Spanish speaker of English
+@about Five pure vowels, no θ ð z or ʃ in the usual places, and a vowel in front of word-initial s clusters ("eschool").
+@rhythm syllable
+@strip length
+# Diphthongs first, before their parts change on their own.
+o ʊ > o
+e ɪ > e i
+# Spanish has five vowels, so English's many vowels collapse onto them.
+ɪ > i
+ʊ > u
+ə > e
+æ > a
+ʌ > a
+ɜ > e
+ɑ > a
+ɒ > o
+ɔ > o
+ɛ > e
+# Consonants English has and Spanish lacks.
+θ > s
+ð > d
+z > s
+v > b
+ʃ > t͡ʃ
+d͡ʒ > ʝ
+h > x / # _
+ɹ > r / # _
+ɹ > ɾ
+# A word cannot begin with s + consonant, so Spanish speakers add an e.
+∅ > e / # _ s {p,t,k}
