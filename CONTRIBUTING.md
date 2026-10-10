@@ -36,3 +36,7 @@ phonetic claim, add a test for it. `npm test` needs no install.
 
 Language data lives in `data/` as plain text (TSV). A dictionary change is a PR like any other; a test checks that
 every IPA symbol in it can actually be sounded.
+
+## Translations
+
+Every sentence on a page lives in `data/i18n/<code>.json`; `en.json` is the source. To change a sentence, edit its id in `en.json` and in every other catalogue. To add a string, put `data-i18n="some.id"` on the element (or `data-i18n-html` for markup, `data-i18n-attr="title:some.id"` for attributes), or call `t('some.id', { name })` in a script, and add the id to `en.json`. To add a language, copy `en.json`, translate it, and add it to `LOCALES` in `lib/i18n.js`. The tests check that every catalogue has every id, with the same `{placeholders}` and tags, and that every id used in a page or script exists.

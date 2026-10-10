@@ -1,60 +1,56 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Demo 2 · Consonants · ipa-pink-trombone</title>
-  <meta name="description" content="Press a symbol in the IPA consonant table and watch the vocal tract close, hiss, buzz or flutter.">
-  <link rel="stylesheet" href="/css/site.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title data-i18n="d02.title1">Demo 2 · Consonants · ipa-pink-trombone</title>
+<meta content="Press a symbol in the IPA consonant table and watch the vocal tract close, hiss, buzz or flutter." data-i18n-attr="content:d02.meta1" name="description"/>
+<link href="/css/site.css" rel="stylesheet"/>
 </head>
 <body>
-  <nav class="top">
-    <a href="/"><strong>ipa-pink-trombone</strong></a>
-    <span>Demo 2 · Consonants</span>
-    <a href="/literate/?src=demos/02-consonants/main.js">Read this demo's source</a>
-    <a href="/literate/?src=lib/consonants.js">Read the mapping</a>
-  </nav>
-
-  <h1>Consonants</h1>
-  <p class="tag">Press a symbol. Fricatives, nasals and approximants sound as long as you hold them.</p>
-  <p>Columns are <em>where</em> the tract is narrowed, rows are <em>how</em>. Where a cell has two symbols,
+<nav class="top">
+<a href="/"><strong>ipa-pink-trombone</strong></a>
+<span data-i18n="d02.span1">Demo 2 · Consonants</span>
+<a data-i18n="d01.a1" href="/literate/?src=demos/02-consonants/main.js">Read this demo's source</a>
+<a data-i18n="d01.a2" href="/literate/?src=lib/consonants.js">Read the mapping</a>
+</nav>
+<h1 data-i18n="d02.h11">Consonants</h1>
+<p class="tag" data-i18n="d02.p1">Press a symbol. Fricatives, nasals and approximants sound as long as you hold them.</p>
+<p data-i18n-html="d02.p2">Columns are <em>where</em> the tract is narrowed, rows are <em>how</em>. Where a cell has two symbols,
      the first is voiceless and the second voiced. Stops, affricates, taps and trills are gestures that play
      through. On the right the tract shows the constriction as it moves.</p>
-
-  <div class="demo-grid">
-    <section class="panel" aria-label="Consonant table">
-      <div class="table-wrap" id="table"></div>
-    </section>
-    <section class="panel" aria-label="Vocal tract">
-      <canvas id="tract" width="640" height="400" aria-label="Side view of the vocal tract"></canvas>
-      <p class="readout" id="readout" role="status" aria-live="polite">Press a symbol to begin.</p>
-    </section>
-  </div>
-
-  <section class="panel">
-    <div class="row">
-      <label>Between vowels
-        <select id="carrier">
-          <option value="none">none (consonant alone)</option>
-          <option value="a" selected>a _ a</option>
-          <option value="i">i _ i</option>
-          <option value="u">u _ u</option>
-        </select>
-      </label>
-      <label><input type="checkbox" id="aspirated"> Aspirated stops (pʰ tʰ kʰ)</label>
-      <label>Pitch <input type="range" id="pitch" min="0" max="1" step="0.001" value="0.3"> <output id="pitchOut"></output></label>
-    </div>
-    <div class="row" style="margin-top:.8rem">
-      <button id="playRow" class="primary">Play every stop</button>
-      <button id="playFric">Play every fricative</button>
-      <button id="stop">Stop</button>
-      <button id="download">Download WAV</button>
-    </div>
-    <p class="note" id="status"></p>
-    <details><summary>What is not modelled</summary><ul id="notModelled"></ul></details>
-  </section>
-
-  <script type="module" src="/demos/02-consonants/main.js"></script>
-  <script type="module" src="/lib/ui/lessonnav.js"></script>
+<div class="demo-grid">
+<section aria-label="Consonant table" class="panel" data-i18n-attr="aria-label:d02.attr1">
+<div class="table-wrap" id="table"></div>
+</section>
+<section aria-label="Vocal tract" class="panel" data-i18n-attr="aria-label:d01.attr2">
+<canvas aria-label="Side view of the vocal tract" height="400" id="tract" width="640"></canvas>
+<p aria-live="polite" class="readout" data-i18n="d02.p3" id="readout" role="status">Press a symbol to begin.</p>
+</section>
+</div>
+<section class="panel">
+<div class="row">
+<label><span data-i18n="d02.t1">Between vowels</span> <select id="carrier">
+<option data-i18n="d02.option1" value="none">none (consonant alone)</option>
+<option value="a" selected>a _ a</option>
+<option value="i">i _ i</option>
+<option value="u">u _ u</option>
+</select>
+</label>
+<label><input id="aspirated" type="checkbox"/> <span data-i18n="d02.t2">Aspirated stops (pʰ tʰ kʰ)</span></label>
+<label><span data-i18n="d01.t2">Pitch</span> <input id="pitch" max="1" min="0" step="0.001" type="range" value="0.3"/> <output id="pitchOut"></output></label>
+</div>
+<div class="row" style="margin-top:.8rem">
+<button class="primary" data-i18n="d02.button1" id="playRow">Play every stop</button>
+<button data-i18n="d02.button2" id="playFric">Play every fricative</button>
+<button data-i18n="d01.button3" id="stop">Stop</button>
+<button data-i18n="d01.button4" id="download">Download WAV</button>
+</div>
+<p class="note" id="status"></p>
+<details><summary data-i18n="d02.summary1">What is not modelled</summary><ul id="notModelled"></ul></details>
+</section>
+<script src="/demos/02-consonants/main.js" type="module"></script>
+<script src="/lib/ui/lessonnav.js" type="module"></script>
 </body>
 </html>

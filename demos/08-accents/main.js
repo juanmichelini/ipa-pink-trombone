@@ -16,6 +16,7 @@ import { DEFAULT_FRAME } from '../../lib/score.js';
 import { shapeOf } from '../../lib/tractshape.js';
 import { drawTract } from '../../lib/ui/tractview.js';
 import { lazySynth, playAnimated, downloadWav, log, unlog, round } from '../../lib/ui/demo.js';
+import { t, tp } from '../../lib/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const synthHolder = lazySynth();
@@ -47,7 +48,7 @@ function recompute() {
   result = { before: ipa, ...applyAccent(ipa, accent), words };
   $('before').textContent = `/${ipa}/`;
   $('after').textContent = `/${result.ipa}/`;
-  $('errors').replaceChildren(...accent.errors.map((e) => Object.assign(document.createElement('li'), { textContent: `line ${e.line}: ${e.message}` })));
+  $('errors').replaceChildren(...accent.errors.map((e) => Object.assign(document.createElement('li'), { textContent: t('acc.error', { line: e.line, message: e.message }) })));
   $('about').textContent = accent.about || '';
   const body = $('trace').tBodies[0];
   body.replaceChildren();
@@ -57,7 +58,7 @@ function recompute() {
     row.insertCell().textContent = `${t.before} → ${t.after}`;
   }
   const missing = (words || []).filter((w) => !w.ipa).map((w) => w.word);
-  $('missing').textContent = missing.length ? `Not in the dictionary, skipped: ${missing.join(', ')}` : '';
+  $('missing').textContent = missing.length ? t('acc.missing', { words: missing.join(', ') }) : '';
 }
 
 // ## Saying
@@ -71,7 +72,7 @@ function build(ipa, withRhythm) {
 async function play(ipa, label, withRhythm) {
   const u = build(ipa, withRhythm);
   last = u;
-  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = `Audio could not start: ${error.message}`; return; }
+  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   playing = playAnimated(synth, u.score, (frame, t) => {
     drawTract($('tract'), shapeOf(frame));
     const m = markAt(u.marks, t);
@@ -79,13 +80,13 @@ async function play(ipa, label, withRhythm) {
   });
   await playing.done;
 }
-async function sayAccent() { if (playing) playing.cancel(); recompute(); await play(result.ipa, accent.name || 'accent', true); }
-async function sayOriginal() { if (playing) playing.cancel(); recompute(); await play(result.before, 'as written', false); }
+async function sayAccent() { if (playing) playing.cancel(); recompute(); await play(result.ipa, accent.name || t('acc.accent'), true); }
+async function sayOriginal() { if (playing) playing.cancel(); recompute(); await play(result.before, t('acc.asWritten'), false); }
 async function both() {
   if (playing) playing.cancel();
   const token = (both.token = (both.token || 0) + 1);
   recompute();
-  for (const [ipa, label, rh] of [[result.before, 'as written', false], [result.ipa, accent.name || 'accent', true]]) {
+  for (const [ipa, label, rh] of [[result.before, t('acc.asWritten'), false], [result.ipa, accent.name || t('acc.accent'), true]]) {
     if (both.token !== token) return;
     $('status').textContent = label;
     await play(ipa, label, rh);
@@ -106,7 +107,7 @@ async function choose(id) {
 for (const a of ACCENTS) {
   const o = document.createElement('option');
   o.value = a.id;
-  o.textContent = a.label;
+  o.textContent = t(`acc.${a.id}`);
   $('accent').append(o);
 }
 $('accent').addEventListener('change', (e) => choose(e.target.value));

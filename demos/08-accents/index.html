@@ -1,69 +1,65 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Demo 8 · Accents · ipa-pink-trombone</title>
-  <meta name="description" content="Accents as rewrite rules on IPA: edit the rules, hear the same sentence in a different accent.">
-  <link rel="stylesheet" href="/css/site.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title data-i18n="d08.title1">Demo 8 · Accents · ipa-pink-trombone</title>
+<meta content="Accents as rewrite rules on IPA: edit the rules, hear the same sentence in a different accent." data-i18n-attr="content:d08.meta1" name="description"/>
+<link href="/css/site.css" rel="stylesheet"/>
 </head>
 <body>
-  <nav class="top">
-    <a href="/"><strong>ipa-pink-trombone</strong></a>
-    <span>Demo 8 · Accents</span>
-    <a href="/literate/?src=demos/08-accents/main.js">Read this demo's source</a>
-    <a href="/literate/?src=lib/accents.js">Read the rule language</a>
-  </nav>
-
-  <h1>Accents</h1>
-  <p class="tag">Rules in, accent out.</p>
-  <p>An accent here is a short list of rewrite rules applied to the IPA <em>before</em> it is sounded.
+<nav class="top">
+<a href="/"><strong>ipa-pink-trombone</strong></a>
+<span data-i18n="d08.span1">Demo 8 · Accents</span>
+<a data-i18n="d01.a1" href="/literate/?src=demos/08-accents/main.js">Read this demo's source</a>
+<a data-i18n="d08.a1" href="/literate/?src=lib/accents.js">Read the rule language</a>
+</nav>
+<h1 data-i18n="d08.h11">Accents</h1>
+<p class="tag" data-i18n="d08.p1">Rules in, accent out.</p>
+<p data-i18n-html="d08.p2">An accent here is a short list of rewrite rules applied to the IPA <em>before</em> it is sounded.
      <code>θ &gt; s</code> turns every θ into s; <code>t &gt; ʔ / V _ V</code> does it between vowels only.
      Pick an accent, then edit its rules and hear the difference. These are sketches of tendencies,
      not portraits of real people.</p>
-
-  <section class="panel">
-    <div class="row">
-      <label>Accent <select id="accent"></select></label>
-      <label><input type="checkbox" id="useRhythm" checked> Use the accent's rhythm</label>
-      <label>Pitch <input type="range" id="pitch" min="0" max="1" step="0.001"> <output id="pitchOut"></output></label>
-    </div>
-    <label for="text" class="note">English text (words from the dictionary) or IPA between slashes, e.g. /ˈhɛloʊ/</label>
-    <textarea id="text" rows="2" spellcheck="false" style="width:100%;font-size:1.3rem"></textarea>
-    <div class="row" style="margin-top:.6rem">
-      <button id="sayAccent" class="primary">Say with accent</button>
-      <button id="sayOriginal">Say as written</button>
-      <button id="both">Both, in turn</button>
-      <button id="stop">Stop</button>
-      <button id="download">Download WAV</button>
-    </div>
-    <p class="note" id="status" role="status"></p>
-  </section>
-
-  <div class="demo-grid">
-    <section class="panel" aria-label="Rules">
-      <p class="note"><span id="about"></span></p>
-      <label for="rules" class="note">Rules (editable)</label>
-      <textarea id="rules" rows="14" spellcheck="false" style="width:100%;font:1rem var(--ipa)"></textarea>
-      <ul id="errors" class="note"></ul>
-    </section>
-    <section class="panel" aria-label="Result">
-      <p class="note">As written</p>
-      <p id="before" class="readout" style="font-family:var(--ipa)"></p>
-      <p class="note">With the accent</p>
-      <p id="after" class="readout" style="font-family:var(--ipa)"></p>
-      <p class="note">What changed</p>
-      <table class="ipa-table" id="trace"><tbody></tbody></table>
-      <p class="note" id="missing"></p>
-    </section>
-  </div>
-
-  <section class="panel" aria-label="Vocal tract">
-    <canvas id="tract" width="640" height="400" aria-label="Side view of the vocal tract"></canvas>
-    <p class="readout" id="readout" role="status" aria-live="polite"></p>
-  </section>
-
-  <script type="module" src="/demos/08-accents/main.js"></script>
-  <script type="module" src="/lib/ui/lessonnav.js"></script>
+<section class="panel">
+<div class="row">
+<label><span data-i18n="d08.t1">Accent</span> <select id="accent"></select></label>
+<label><input checked="" id="useRhythm" type="checkbox"/> <span data-i18n="d08.t2">Use the accent's rhythm</span></label>
+<label><span data-i18n="d01.t2">Pitch</span> <input id="pitch" max="1" min="0" step="0.001" type="range"/> <output id="pitchOut"></output></label>
+</div>
+<label class="note" data-i18n="d08.label1" for="text">English text (words from the dictionary) or IPA between slashes, e.g. /ˈhɛloʊ/</label>
+<textarea id="text" rows="2" spellcheck="false" style="width:100%;font-size:1.3rem"></textarea>
+<div class="row" style="margin-top:.6rem">
+<button class="primary" data-i18n="d08.button1" id="sayAccent">Say with accent</button>
+<button data-i18n="d08.button2" id="sayOriginal">Say as written</button>
+<button data-i18n="d08.button3" id="both">Both, in turn</button>
+<button data-i18n="d01.button3" id="stop">Stop</button>
+<button data-i18n="d01.button4" id="download">Download WAV</button>
+</div>
+<p class="note" id="status" role="status"></p>
+</section>
+<div class="demo-grid">
+<section aria-label="Rules" class="panel" data-i18n-attr="aria-label:d08.attr1">
+<p class="note"><span id="about"></span></p>
+<label class="note" data-i18n="d08.label2" for="rules">Rules (editable)</label>
+<textarea id="rules" rows="14" spellcheck="false" style="width:100%;font:1rem var(--ipa)"></textarea>
+<ul class="note" id="errors"></ul>
+</section>
+<section aria-label="Result" class="panel" data-i18n-attr="aria-label:d08.attr2">
+<p class="note" data-i18n="d08.p3">As written</p>
+<p class="readout" id="before" style="font-family:var(--ipa)"></p>
+<p class="note" data-i18n="d08.p4">With the accent</p>
+<p class="readout" id="after" style="font-family:var(--ipa)"></p>
+<p class="note" data-i18n="d08.p5">What changed</p>
+<table class="ipa-table" id="trace"><tbody></tbody></table>
+<p class="note" id="missing"></p>
+</section>
+</div>
+<section aria-label="Vocal tract" class="panel" data-i18n-attr="aria-label:d01.attr2">
+<canvas aria-label="Side view of the vocal tract" height="400" id="tract" width="640"></canvas>
+<p aria-live="polite" class="readout" id="readout" role="status"></p>
+</section>
+<script src="/demos/08-accents/main.js" type="module"></script>
+<script src="/lib/ui/lessonnav.js" type="module"></script>
 </body>
 </html>

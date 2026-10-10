@@ -1,51 +1,48 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Demo 5 · Voices · ipa-pink-trombone</title>
-  <meta name="description" content="The same IPA said by a bass, a child, a soprano, a whisper and more: tract length, pitch and voice quality.">
-  <link rel="stylesheet" href="/css/site.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title data-i18n="d05.title1">Demo 5 · Voices · ipa-pink-trombone</title>
+<meta content="The same IPA said by a bass, a child, a soprano, a whisper and more: tract length, pitch and voice quality." data-i18n-attr="content:d05.meta1" name="description"/>
+<link href="/css/site.css" rel="stylesheet"/>
 </head>
 <body>
-  <nav class="top">
-    <a href="/"><strong>ipa-pink-trombone</strong></a>
-    <span>Demo 5 · Voices</span>
-    <a href="/literate/?src=demos/05-voices/main.js">Read this demo's source</a>
-    <a href="/literate/?src=lib/voices.js">Read the voices</a>
-  </nav>
-
-  <h1>Voices</h1>
-  <p class="tag">Same IPA, different speaker.</p>
-  <p>A voice is a tract length, a pitch and a voice quality. A shorter tract moves every resonance up
+<nav class="top">
+<a href="/"><strong>ipa-pink-trombone</strong></a>
+<span data-i18n="d05.span1">Demo 5 · Voices</span>
+<a data-i18n="d01.a1" href="/literate/?src=demos/05-voices/main.js">Read this demo's source</a>
+<a data-i18n="d05.a1" href="/literate/?src=lib/voices.js">Read the voices</a>
+</nav>
+<h1 data-i18n="d05.h11">Voices</h1>
+<p class="tag" data-i18n="d05.p1">Same IPA, different speaker.</p>
+<p data-i18n="d05.p2">A voice is a tract length, a pitch and a voice quality. A shorter tract moves every resonance up
      together, which is most of what makes a child sound like a child. Pick a preset and then bend its
      numbers.</p>
-
-  <section class="panel">
-    <label for="ipa" class="note">IPA</label>
-    <textarea id="ipa" rows="2" spellcheck="false" style="width:100%;font:1.4rem var(--ipa)">ˈhɛloʊ wɜːld</textarea>
-    <div id="voices" class="vowel-buttons" role="group" aria-label="Voice presets"></div>
-    <div class="row" style="margin-top:.8rem">
-      <label>Tract length <input type="range" id="tract-cm" min="8" max="27" step="0.1"> <output id="tractOut"></output></label>
-      <label>Pitch <input type="range" id="pitch" min="0" max="1" step="0.001"> <output id="pitchOut"></output></label>
-      <label>Tenseness <input type="range" id="tenseness" min="0.1" max="1" step="0.01"> <output id="tensenessOut"></output></label>
-      <label>Vibrato <input type="range" id="vibrato" min="0" max="0.05" step="0.001"> <output id="vibratoOut"></output></label>
-    </div>
-    <div class="row" style="margin-top:.8rem">
-      <button id="say" class="primary">Say</button>
-      <button id="all">Every voice, one after another</button>
-      <button id="stop">Stop</button>
-      <button id="download">Download WAV</button>
-    </div>
-    <p class="note" id="status" role="status"></p>
-  </section>
-
-  <section class="panel" aria-label="Vocal tract">
-    <canvas id="tract" width="640" height="400" aria-label="Side view of the vocal tract"></canvas>
-    <p class="readout" id="readout" role="status" aria-live="polite"></p>
-  </section>
-
-  <script type="module" src="/demos/05-voices/main.js"></script>
-  <script type="module" src="/lib/ui/lessonnav.js"></script>
+<section class="panel">
+<label class="note" data-i18n="d03.label1" for="ipa">IPA</label>
+<textarea id="ipa" rows="2" spellcheck="false" style="width:100%;font:1.4rem var(--ipa)">ˈhɛloʊ wɜːld</textarea>
+<div aria-label="Voice presets" class="vowel-buttons" data-i18n-attr="aria-label:d05.attr1" id="voices" role="group"></div>
+<div class="row" style="margin-top:.8rem">
+<label><span data-i18n="d05.t1">Tract length</span> <input id="tract-cm" max="27" min="8" step="0.1" type="range"/> <output id="tractOut"></output></label>
+<label><span data-i18n="d01.t2">Pitch</span> <input id="pitch" max="1" min="0" step="0.001" type="range"/> <output id="pitchOut"></output></label>
+<label><span data-i18n="d05.t2">Tenseness</span> <input id="tenseness" max="1" min="0.1" step="0.01" type="range"/> <output id="tensenessOut"></output></label>
+<label><span data-i18n="d05.t3">Vibrato</span> <input id="vibrato" max="0.05" min="0" step="0.001" type="range"/> <output id="vibratoOut"></output></label>
+</div>
+<div class="row" style="margin-top:.8rem">
+<button class="primary" data-i18n="d03.button1" id="say">Say</button>
+<button data-i18n="d05.button1" id="all">Every voice, one after another</button>
+<button data-i18n="d01.button3" id="stop">Stop</button>
+<button data-i18n="d01.button4" id="download">Download WAV</button>
+</div>
+<p class="note" id="status" role="status"></p>
+</section>
+<section aria-label="Vocal tract" class="panel" data-i18n-attr="aria-label:d01.attr2">
+<canvas aria-label="Side view of the vocal tract" height="400" id="tract" width="640"></canvas>
+<p aria-live="polite" class="readout" id="readout" role="status"></p>
+</section>
+<script src="/demos/05-voices/main.js" type="module"></script>
+<script src="/lib/ui/lessonnav.js" type="module"></script>
 </body>
 </html>

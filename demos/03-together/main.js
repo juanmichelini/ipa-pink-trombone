@@ -15,6 +15,7 @@ import { DEFAULT_FRAME } from '../../lib/score.js';
 import { shapeOf } from '../../lib/tractshape.js';
 import { drawTract } from '../../lib/ui/tractview.js';
 import { lazySynth, playAnimated, downloadWav, log, unlog, round } from '../../lib/ui/demo.js';
+import { t, tp } from '../../lib/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const synthHolder = lazySynth();
@@ -24,14 +25,14 @@ const state = { f0: 130 };
 const PITCH = [70, 400];
 
 const EXAMPLES = [
-  ['hello world', 'ˈhɛloʊ wɜːld'],
-  ['mama', 'ˈmama'],
-  ['sheep / ship', 'ʃiːp ʃɪp'],
-  ['pat / bat', 'pʰat bat'],
-  ['yo-yo', 'ˈjoʊjoʊ'],
-  ['trill', 'ˈtɾa ˈra'],
-  ['sixth', 'sɪksθ'],
-  ['French nasals', 'bɔ̃ ʒuʁ'],
+  [t('tog.ex.1'), 'ˈhɛloʊ wɜːld'],
+  [t('tog.ex.2'), 'ˈmama'],
+  [t('tog.ex.3'), 'ʃiːp ʃɪp'],
+  [t('tog.ex.4'), 'pʰat bat'],
+  [t('tog.ex.5'), 'ˈjoʊjoʊ'],
+  [t('tog.ex.6'), 'ˈtɾa ˈra'],
+  [t('tog.ex.7'), 'sɪksθ'],
+  [t('tog.ex.8'), 'bɔ̃ ʒuʁ'],
 ];
 
 // ## Planning on demand
@@ -42,7 +43,7 @@ let current = null;
 function replan() {
   const text = $('ipa').value;
   const unknown = unknownCharacters(text);
-  $('unknown').textContent = unknown.length ? `Not understood, and skipped: ${[...new Set(unknown)].join(' ')}` : '';
+  $('unknown').textContent = unknown.length ? t('tog.unknown', { chars: [...new Set(unknown)].join(' ') }) : '';
   current = plan(text, { f0: state.f0 });
   const strip = $('segments');
   strip.replaceChildren();
@@ -60,7 +61,7 @@ function replan() {
 async function sayText(text = $('ipa').value) {
   if (playing) playing.cancel();
   const p = text === $('ipa').value ? current : plan(text, { f0: state.f0 });
-  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = `Audio could not start: ${error.message}`; return; }
+  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   playing = playAnimated(synth, p.score, (frame, time) => {
     drawTract($('tract'), shapeOf(frame));
     const m = markAt(p.marks, time);
@@ -87,7 +88,7 @@ for (const [label, ipa] of EXAMPLES) {
   b.addEventListener('click', () => { $('ipa').value = ipa; replan(); sayText(); });
   $('examples').append(b);
 }
-for (const [title, symbols] of [['Vowels', VOWEL_SYMBOLS], ['Consonants', CONSONANT_SYMBOLS], ['Marks', ['ˈ', 'ˌ', 'ː', 'ʰ', '̃', ' ']]]) {
+for (const [title, symbols] of [[t('tog.vowels'), VOWEL_SYMBOLS], [t('tog.consonants'), CONSONANT_SYMBOLS], [t('tog.marks'), ['ˈ', 'ˌ', 'ː', 'ʰ', '̃', ' ']]]) {
   const h = document.createElement('p');
   h.className = 'note';
   h.textContent = title;
@@ -95,7 +96,7 @@ for (const [title, symbols] of [['Vowels', VOWEL_SYMBOLS], ['Consonants', CONSON
   row.className = 'vowel-buttons';
   for (const s of symbols) {
     const b = document.createElement('button');
-    b.textContent = s === '̃' ? '◌̃' : s === ' ' ? 'space' : s;
+    b.textContent = s === '̃' ? '◌̃' : s === ' ' ? t('tog.space') : s;
     b.addEventListener('click', () => { $('ipa').value += s; replan(); });
     row.append(b);
   }

@@ -1,55 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Demo 4 · Languages · ipa-pink-trombone</title>
-  <meta name="description" content="Pick a language, type words, see the IPA from a dictionary, and hear a vocal tract say them.">
-  <link rel="stylesheet" href="/css/site.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title data-i18n="d04.title1">Demo 4 · Languages · ipa-pink-trombone</title>
+<meta content="Pick a language, type words, see the IPA from a dictionary, and hear a vocal tract say them." data-i18n-attr="content:d04.meta1" name="description"/>
+<link href="/css/site.css" rel="stylesheet"/>
 </head>
 <body>
-  <nav class="top">
-    <a href="/"><strong>ipa-pink-trombone</strong></a>
-    <span>Demo 4 · Languages</span>
-    <a href="/literate/?src=demos/04-languages/main.js">Read this demo's source</a>
-    <a href="/literate/?src=lib/languages.js">Read the registry</a>
-  </nav>
-
-  <h1>Languages</h1>
-  <p class="tag">Words in, IPA out, sound out.</p>
-  <p>Ten languages, each with a small hand-made dictionary in <code>data/dictionaries</code>. Spanish and
+<nav class="top">
+<a href="/"><strong>ipa-pink-trombone</strong></a>
+<span data-i18n="d04.span1">Demo 4 · Languages</span>
+<a data-i18n="d01.a1" href="/literate/?src=demos/04-languages/main.js">Read this demo's source</a>
+<a data-i18n="d04.a1" href="/literate/?src=lib/languages.js">Read the registry</a>
+</nav>
+<h1 data-i18n="d04.h11">Languages</h1>
+<p class="tag" data-i18n="d04.p1">Words in, IPA out, sound out.</p>
+<p data-i18n-html="d04.p2">Ten languages, each with a small hand-made dictionary in <code>data/dictionaries</code>. Spanish and
      Indonesian also have spelling rules, so words outside the dictionary still work. Everything else
      says which words it does not know. These are seed dictionaries: a pull request adds more.</p>
-
-  <section class="panel">
-    <div class="row">
-      <label>Language <select id="language"></select></label>
-      <label>Pitch <input type="range" id="pitch" min="0" max="1" step="0.001" value="0.3"> <output id="pitchOut"></output></label>
-    </div>
-    <label for="text" class="note">Text</label>
-    <textarea id="text" rows="2" spellcheck="false" style="width:100%;font-size:1.3rem"></textarea>
-    <div class="row">
-      <button id="say" class="primary">Say</button>
-      <button id="stop">Stop</button>
-      <button id="download">Download WAV</button>
-    </div>
-    <p class="note" id="status" role="status"></p>
-  </section>
-
-  <div class="demo-grid">
-    <section class="panel" aria-label="IPA">
-      <table class="ipa-table" id="words"><tbody></tbody></table>
-      <p class="note" id="missing"></p>
-      <p class="note">Dictionary words (click to hear):</p>
-      <div id="dictionary" class="vowel-buttons"></div>
-    </section>
-    <section class="panel" aria-label="Vocal tract">
-      <canvas id="tract" width="640" height="400" aria-label="Side view of the vocal tract"></canvas>
-      <p class="readout" id="readout" role="status" aria-live="polite"></p>
-    </section>
-  </div>
-
-  <script type="module" src="/demos/04-languages/main.js"></script>
-  <script type="module" src="/lib/ui/lessonnav.js"></script>
+<section class="panel">
+<div class="row">
+<label><span data-i18n="d04.t1">Language</span> <select id="language"></select></label>
+<label><span data-i18n="d01.t2">Pitch</span> <input id="pitch" max="1" min="0" step="0.001" type="range" value="0.3"/> <output id="pitchOut"></output></label>
+</div>
+<label class="note" data-i18n="d04.label1" for="text">Text</label>
+<textarea id="text" rows="2" spellcheck="false" style="width:100%;font-size:1.3rem"></textarea>
+<div class="row">
+<button class="primary" data-i18n="d03.button1" id="say">Say</button>
+<button data-i18n="d01.button3" id="stop">Stop</button>
+<button data-i18n="d01.button4" id="download">Download WAV</button>
+</div>
+<p class="note" id="status" role="status"></p>
+</section>
+<div class="demo-grid">
+<section aria-label="IPA" class="panel" data-i18n-attr="aria-label:d03.label1">
+<table class="ipa-table" id="words"><tbody></tbody></table>
+<p class="note" id="missing"></p>
+<p class="note" data-i18n="d04.p3">Dictionary words (click to hear):</p>
+<div class="vowel-buttons" id="dictionary"></div>
+</section>
+<section aria-label="Vocal tract" class="panel" data-i18n-attr="aria-label:d01.attr2">
+<canvas aria-label="Side view of the vocal tract" height="400" id="tract" width="640"></canvas>
+<p aria-live="polite" class="readout" id="readout" role="status"></p>
+</section>
+</div>
+<script src="/demos/04-languages/main.js" type="module"></script>
+<script src="/lib/ui/lessonnav.js" type="module"></script>
 </body>
 </html>

@@ -13,6 +13,7 @@ import { scaleTime, DEFAULT_FRAME } from '../../lib/score.js';
 import { shapeOf } from '../../lib/tractshape.js';
 import { drawTract } from '../../lib/ui/tractview.js';
 import { lazySynth, playAnimated, downloadWav, log, unlog } from '../../lib/ui/demo.js';
+import { t, tp } from '../../lib/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const synthHolder = lazySynth();
@@ -52,7 +53,7 @@ function showBars(u) {
     el.style.textAlign = 'center';
     el.style.overflow = 'hidden';
     el.textContent = m.symbol;
-    el.title = `${m.symbol}: ${Math.round((m.end - m.start) * 1000)} ms`;
+    el.title = t('tempo.ms', { symbol: m.symbol, ms: Math.round((m.end - m.start) * 1000) });
     bars.append(el);
   }
 }
@@ -61,7 +62,7 @@ function showBars(u) {
 function refresh() {
   current = utterance();
   showBars(current);
-  $('rateOut').textContent = `×${rate().toFixed(2)} · ${syllableRate(current.marks, current.duration).toFixed(1)} syllables/s · ${current.duration.toFixed(2)} s`;
+  $('rateOut').textContent = t('tempo.rate', { rate: rate().toFixed(2), sps: syllableRate(current.marks, current.duration).toFixed(1), sec: current.duration.toFixed(2) });
 }
 
 // ## Playing
@@ -70,7 +71,7 @@ function refresh() {
 // frame being sounded, so the tract picture moves in time with what you hear. `markAt` turns the
 // time into the segment that is sounding, for the readout.
 async function play(u, label = '') {
-  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = `Audio could not start: ${error.message}`; return; }
+  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   showBars(u);
   playing = playAnimated(synth, u.score, (frame, t) => {
     drawTract($('tract'), shapeOf(frame));
@@ -86,10 +87,10 @@ async function say() { if (playing) playing.cancel(); refresh(); await play(curr
 async function ladder() {
   if (playing) playing.cancel();
   const token = (ladder.token = (ladder.token || 0) + 1);
-  for (const [name, r] of [['slow', 0.6], ['medium', 1], ['fast', 1.8], ['very fast', 3]]) {
+  for (const [name, r] of [['slow', 0.6], ['medium', 1], ['fast', 1.8], ['veryfast', 3]]) {
     if (ladder.token !== token) return;
-    $('status').textContent = `${name} (×${r})`;
-    await play(utterance(r), `${name} · `);
+    $('status').textContent = `${t(`tempo.${name}`)} (×${r})`;
+    await play(utterance(r), `${t(`tempo.${name}`)} · `);
     await new Promise((res) => setTimeout(res, 300));
   }
   $('status').textContent = '';
