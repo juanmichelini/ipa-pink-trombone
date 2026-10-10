@@ -61,12 +61,30 @@ docs/                 this plan
 
 - **"English, Spanish, and top 10 languages"** is read as the ten most spoken languages by total speakers, which already
   contain both English and Spanish: English, Mandarin, Hindi, Spanish, Standard Arabic, French, Bengali, Portuguese,
-  Russian, Urdu. The language registry is data-driven, so adding Indonesian, German, Japanese, etc. is a small PR.
+  Russian, and a tenth place that is Urdu or Indonesian depending on the count. Urdu and Hindi are one spoken language
+  in two scripts and Hindi is already present, so Indonesian took the tenth place. The registry is data-driven, so adding
+  Urdu, German, Japanese, etc. is a small PR.
 - **Dictionaries are seeds**, not full lexicons: a few dozen common words per language, curated by hand, with rule-based
   grapheme-to-phoneme where the orthography is regular. Quality is an ongoing contribution, tracked in issues.
 - **Pulmonic consonants only** at first. Clicks, ejectives and implosives are listed as not modelled.
 - **We cannot listen in CI.** Calibration targets published formant values and tests check relationships, but a human
   ear should review each demo. PRs say whether that happened.
+
+## Status
+
+All eight experiments are merged and live (issues #3 to #10). What is verified, and what is not:
+
+- **Verified by tests (`npm test`)**: engine stability, formant positions against published vowel values, consonant
+  acoustics (closure silence, fricative high-frequency energy, nasal radiation, trill modulation), tokenizer and planner
+  behaviour, every dictionary and accent file parses and sounds, rhythm and tempo relationships, and wiring (every demo
+  import and element id resolves).
+- **Smoke-tested under a fake DOM**: each demo page loads, builds its controls and sends a sane score to the worklet.
+- **Not verified**: how any of it *sounds* to a human, and behaviour in a real browser and on Vercel. Those need an ear and
+  a deployment, and are the first thing to do next.
+
+Known approximations: lateral consonants are midline-narrowed (a tube has no sides); clicks, ejectives and implosives are
+not modelled; palatalisation, emphatics, dental consonants and breathy voice are approximated by the nearest sound;
+rhythm classes are a simplification; accents are sketches of tendencies.
 
 ## Out of scope for now
 

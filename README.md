@@ -20,11 +20,14 @@ share one library in [`lib/`](lib/).
 | 1 | Vowels | An IPA vowel chart drives the tongue and lips |
 | 2 | Consonants | The IPA pulmonic table drives constrictions, velum and noise |
 | 3 | Together | IPA strings of vowels and consonants |
-| 4 | Languages | A word to IPA dictionary for the ten most spoken languages |
+| 4 | Languages | A word to IPA dictionary for ten of the most spoken languages (English, Spanish, Mandarin, Hindi, Arabic, French, Bengali, Portuguese, Russian, Indonesian) |
 | 5 | Voices | Male, female, kid, soprano, bass... |
 | 6 | Tempo | Faster and slower speech without turning to mush |
 | 7 | Rhythm | Stress-timed vs syllable-timed |
 | 8 | Accents | Rewrite rules applied to the IPA before it is sounded |
+
+**All eight experiments are live.** They have been checked numerically and by smoke tests, but a human ear and a
+real-browser pass are still the best next contribution; see "Status" in the plan.
 
 Status and design notes live in [`docs/PLAN.md`](docs/PLAN.md). Progress lives in
 [issues](../../issues) and [pull requests](../../pulls).
