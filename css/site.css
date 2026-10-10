@@ -110,3 +110,4 @@ svg.vowel-chart { width: 100%; max-width: 30rem; height: auto; touch-action: non
 .ipa-cell { font: 1.25rem var(--ipa); min-width: 2rem; padding: .15rem .3rem; margin: .05rem; }
 .ipa-cell.active, .ipa-cell.playing { background: var(--pink); color: #fff; }
 .table-wrap { overflow-x: auto; }
+.vowel-buttons button.playing { background: var(--pink); color: #fff; }
