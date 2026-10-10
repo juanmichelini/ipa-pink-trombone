@@ -67,3 +67,36 @@ test('shapeOf copies, so later shapes do not change earlier ones', () => {
   assert.equal(a.diameter[30], keep);
   assert.equal(a.n, 44);
 });
+
+import { cordsPose, lipPose, velumFlap, tongueBody } from '../lib/ui/tractview.js';
+import { consonantGesture, consonantBySymbol } from '../lib/consonants.js';
+import { normalizeScore, frameAt } from '../lib/score.js';
+
+const holdFrame = (symbol) => {
+  const g = consonantGesture(consonantBySymbol(symbol), { carrier: { tongueIndex: 20, tongueDiameter: 3, lips: 1.5 } });
+  return frameAt(normalizeScore(g.score), (g.hold.start + g.hold.end) / 2);
+};
+
+test('vocal cords: p keeps them open, b vibrates them, h breathes, the glottal stop presses them shut', () => {
+  const state = (s) => cordsPose(shapeOf(holdFrame(s)).source);
+  assert.equal(state('p').state, 'open');
+  assert.equal(state('b').state, 'voiced');
+  assert.ok(state('p').gap > 0.7 && state('b').gap < 0.5);
+  assert.equal(state('h').state, 'breath');
+  assert.equal(state('ʔ').state, 'closed');
+  assert.equal(cordsPose({ intensity: 1 }, 0).vibrating, true);
+});
+
+test('lips: closed for p, pouting for u, spread for i; soft palate lowers for m', () => {
+  const lips = (f) => lipPose(shapeOf(f));
+  assert.ok(lips(holdFrame('p')).opening < 1);
+  assert.ok(lips(vowelFrame(vowelShape(1, 0, 1))).protrusion > lips(vowelFrame(vowelShape(0, 0, 0))).protrusion);
+  assert.ok(velumFlap(shapeOf(holdFrame('m'))).angle > velumFlap(shapeOf(holdFrame('p'))).angle + 0.5);
+});
+
+test('the tongue body sits below its upper surface and follows it', () => {
+  const g = tractGeometry(shapeOf({ tongueIndex: 20, tongueDiameter: 2.5 }));
+  const body = tongueBody(g);
+  assert.equal(body.top.length, body.bottom.length);
+  assert.ok(body.bottom.every((p, i) => Math.hypot(p.x - body.top[i].x, p.y - body.top[i].y) > 10));
+});
