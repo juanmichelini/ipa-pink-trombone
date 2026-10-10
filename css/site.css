@@ -1,30 +1,24 @@
 /* Shared styles for the landing page, the literate viewer and every demo. */
 :root {
-  --bg: #fbf4f1;
-  --panel: #ffffff;
-  --ink: #2a1a20;
-  --muted: #7a6068;
-  --pink: #e0457b;
-  --pink-soft: #f7d4e0;
-  --tongue: #d9486f;
-  --line: #ecd9df;
-  --code-bg: #26171d;
-  --code-ink: #f6e9ee;
+  color-scheme: dark;
+  /* The page is dark. Pink is reserved for the vocal tract itself, as in Pink Trombone;
+     the interface uses a pink-purple accent so the two never compete. */
+  --bg: #0b0b0e;
+  --panel: #15151b;
+  --ink: #ececf1;
+  --muted: #9a9aab;
+  --line: #2a2a35;
+  --accent: #c47dff;
+  --accent-strong: #8f45d8;
+  --accent-soft: #2a1d3d;
+  --code-bg: #0f0f14;
+  --code-ink: #ececf1;
+  --pink: #ff7aa8;
+  --pink-soft: #3a1f2d;
+  --tongue: #ff5c8d;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --ipa: "Charis SIL", "Gentium Plus", "Doulos SIL", "Noto Sans", "Segoe UI", "DejaVu Sans", sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1b1116;
-    --panel: #26171d;
-    --ink: #f6e9ee;
-    --muted: #b99aa6;
-    --pink: #ff7aa8;
-    --pink-soft: #4a2433;
-    --line: #3b2630;
-    --code-bg: #130b0f;
-  }
 }
 * { box-sizing: border-box; }
 html { background: var(--bg); color: var(--ink); }
@@ -34,10 +28,10 @@ body {
   padding: 1.25rem 1rem 4rem;
   font: 1.0625rem/1.6 var(--serif);
 }
-a { color: var(--pink); }
+a { color: var(--accent); }
 h1, h2, h3, h4 { line-height: 1.2; font-weight: 600; }
 h1 { font-size: 2.1rem; margin: 1.5rem 0 .5rem; }
-code { font-family: var(--mono); font-size: .92em; background: var(--pink-soft); padding: .05em .3em; border-radius: 4px; }
+code { font-family: var(--mono); font-size: .92em; background: var(--accent-soft); padding: .05em .3em; border-radius: 4px; }
 .ipa { font-family: var(--ipa); }
 nav.top { display: flex; gap: 1rem; align-items: baseline; font: .95rem var(--serif); color: var(--muted); }
 nav.top a { text-decoration: none; }
@@ -50,12 +44,12 @@ nav.top strong { color: var(--ink); }
   display: block; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
   padding: .9rem 1rem; text-decoration: none; color: inherit; min-height: 7.5rem;
 }
-.card .n { font: 600 .8rem var(--mono); color: var(--pink); }
+.card .n { font: 600 .8rem var(--mono); color: var(--accent); }
 .card h3 { margin: .15rem 0 .3rem; font-size: 1.2rem; }
 .card p { margin: 0; color: var(--muted); font-size: .95rem; line-height: 1.4; }
-a.card:hover { border-color: var(--pink); }
+a.card:hover { border-color: var(--accent); }
 .pill { float: right; font: .7rem var(--mono); border: 1px solid var(--line); border-radius: 99px; padding: .05rem .5rem; color: var(--muted); }
-.pill.live { color: var(--pink); border-color: var(--pink); }
+.pill.live { color: var(--accent); border-color: var(--accent); }
 
 /* Literate viewer */
 .prose { max-width: 40rem; }
@@ -81,26 +75,26 @@ button, select, input[type="text"], textarea {
   border-radius: 8px; padding: .4rem .7rem;
 }
 button { cursor: pointer; }
-button:hover { border-color: var(--pink); }
-button.primary { background: var(--pink); color: #fff; border-color: var(--pink); }
-input[type="range"] { accent-color: var(--pink); }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent-strong); color: #fff; border-color: var(--accent); }
+input[type="range"] { accent-color: var(--accent); }
 .readout { font: .9rem var(--mono); color: var(--muted); }
 canvas { max-width: 100%; height: auto; touch-action: none; }
 .note { color: var(--muted); font-size: .95rem; }
 
 /* IPA charts */
 svg.vowel-chart { width: 100%; max-width: 30rem; height: auto; touch-action: none; user-select: none; cursor: crosshair; }
-.chart-outline { fill: var(--panel); stroke: var(--pink); stroke-width: 1.5; }
+.chart-outline { fill: var(--panel); stroke: var(--accent); stroke-width: 1.5; }
 .chart-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; }
 .chart-dot { fill: var(--muted); }
 .chart-symbol { font: 22px var(--ipa); fill: var(--ink); }
-.chart-symbol.active { fill: var(--pink); font-weight: 700; }
+.chart-symbol.active { fill: var(--accent); font-weight: 700; }
 .chart-caption { font: 12px var(--serif); fill: var(--muted); font-style: italic; }
 .chart-cursor { fill: none; stroke: var(--tongue); stroke-width: 2.5; pointer-events: none; }
 .demo-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); align-items: start; }
 .vowel-buttons { display: flex; flex-wrap: wrap; gap: .3rem; }
 .vowel-buttons button { min-width: 2.4rem; font-size: 1.15rem; padding: .25rem .45rem; }
-.vowel-buttons button.active { background: var(--pink); color: #fff; border-color: var(--pink); }
+.vowel-buttons button.active { background: var(--accent-strong); color: #fff; border-color: var(--accent); }
 
 /* consonant table */
 .ipa-table { border-collapse: collapse; width: 100%; font-size: .8rem; }
@@ -108,6 +102,6 @@ svg.vowel-chart { width: 100%; max-width: 30rem; height: auto; touch-action: non
 .ipa-table thead th { font-size: .7rem; writing-mode: horizontal-tb; }
 .ipa-table td { border: 1px solid var(--line); text-align: center; padding: .1rem; min-width: 2.2rem; }
 .ipa-cell { font: 1.25rem var(--ipa); min-width: 2rem; padding: .15rem .3rem; margin: .05rem; }
-.ipa-cell.active, .ipa-cell.playing { background: var(--pink); color: #fff; }
+.ipa-cell.active, .ipa-cell.playing { background: var(--accent-strong); color: #fff; }
 .table-wrap { overflow-x: auto; }
-.vowel-buttons button.playing { background: var(--pink); color: #fff; }
+.vowel-buttons button.playing { background: var(--accent-strong); color: #fff; }
