@@ -43,7 +43,11 @@ test('live mode makes sound, release fades to silence', async () => {
   assert.ok(rms(held, 128 * 30) > 0.01, 'audible while held');
   assert.ok(held.every(Number.isFinite));
   p.onMessage({ type: 'release' });
-  pull(p, 200);
+  const tail = pull(p, 20);          // the first 60 ms after release
+  assert.ok(rms(tail) > 0.4 * rms(held, 128 * 30), 'the sound rings on after release instead of cutting off');
+  const later = pull(p, 30);         // about 70 to 170 ms
+  assert.ok(rms(later) < rms(tail), 'and it decays');
+  pull(p, 400);
   const after = pull(p, 20);
   assert.ok(rms(after) < 1e-4, 'silent after release');
 });
