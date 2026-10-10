@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo 2 · Consonants · ipa-pink-trombone</title>
+  <meta name="description" content="Press a symbol in the IPA consonant table and watch the vocal tract close, hiss, buzz or flutter.">
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <nav class="top">
+    <a href="/"><strong>ipa-pink-trombone</strong></a>
+    <span>Demo 2 · Consonants</span>
+    <a href="/literate/?src=demos/02-consonants/main.js">Read this demo's source</a>
+    <a href="/literate/?src=lib/consonants.js">Read the mapping</a>
+  </nav>
+
+  <h1>Consonants</h1>
+  <p class="tag">Press a symbol. Fricatives, nasals and approximants sound as long as you hold them.</p>
+  <p>Columns are <em>where</em> the tract is narrowed, rows are <em>how</em>. Where a cell has two symbols,
+     the first is voiceless and the second voiced. Stops, affricates, taps and trills are gestures that play
+     through. On the right the tract shows the constriction as it moves.</p>
+
+  <div class="demo-grid">
+    <section class="panel" aria-label="Consonant table">
+      <div class="table-wrap" id="table"></div>
+    </section>
+    <section class="panel" aria-label="Vocal tract">
+      <canvas id="tract" width="640" height="400" aria-label="Side view of the vocal tract"></canvas>
+      <p class="readout" id="readout" role="status" aria-live="polite">Press a symbol to begin.</p>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="row">
+      <label>Between vowels
+        <select id="carrier">
+          <option value="none">none (consonant alone)</option>
+          <option value="a" selected>a _ a</option>
+          <option value="i">i _ i</option>
+          <option value="u">u _ u</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="aspirated"> Aspirated stops (pʰ tʰ kʰ)</label>
+      <label>Pitch <input type="range" id="pitch" min="0" max="1" step="0.001" value="0.3"> <output id="pitchOut"></output></label>
+    </div>
+    <div class="row" style="margin-top:.8rem">
+      <button id="playRow" class="primary">Play every stop</button>
+      <button id="playFric">Play every fricative</button>
+      <button id="stop">Stop</button>
+      <button id="download">Download WAV</button>
+    </div>
+    <p class="note" id="status"></p>
+    <details><summary>What is not modelled</summary><ul id="notModelled"></ul></details>
+  </section>
+
+  <script type="module" src="/demos/02-consonants/main.js"></script>
+</body>
+</html>
