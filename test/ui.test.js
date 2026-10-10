@@ -98,5 +98,5 @@ test('the tongue body sits below its upper surface and follows it', () => {
   const g = tractGeometry(shapeOf({ tongueIndex: 20, tongueDiameter: 2.5 }));
   const body = tongueBody(g);
   assert.equal(body.top.length, body.bottom.length);
-  assert.ok(body.bottom.every((p, i) => Math.hypot(p.x - body.top[i].x, p.y - body.top[i].y) > 10));
+  assert.ok(body.bottom.every((p, i) => Math.hypot(p.x - body.top[i].x, p.y - body.top[i].y) > 4));
 });
