@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Source · ipa-pink-trombone</title>
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <nav class="top"><a href="/"><strong>ipa-pink-trombone</strong></a> <span>literate source</span></nav>
+  <main id="doc"><p class="note">Loading…</p></main>
+  <script type="module">
+    import { mount } from '/lib/literate.js';
+    const src = new URLSearchParams(location.search).get('src') || 'lib/literate.js';
+    mount(document.getElementById('doc'), src).catch((e) => {
+      document.getElementById('doc').textContent = String(e);
+    });
+  </script>
+</body>
+</html>

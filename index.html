@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ipa-pink-trombone</title>
+  <meta name="description" content="IPA to mouth lessons: incremental experiments with a Pink-Trombone-style vocal tract.">
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <nav class="top"><strong>ipa-pink-trombone</strong>
+    <a href="https://github.com/juanmichelini/ipa-pink-trombone">GitHub</a>
+    <a href="/literate/?src=lib/literate.js">Read the source</a>
+  </nav>
+
+  <h1>IPA to mouth lessons</h1>
+  <p class="tag">A ladder of small experiments, each one adding a single idea.</p>
+  <p>Inspired by <a href="https://dood.al/pinktrombone/">Pink Trombone</a> by Neil Thapen.
+     Click an IPA symbol, watch a vocal tract move, hear what comes out.</p>
+
+  <ul class="grid" id="demos"></ul>
+
+  <script type="module">
+    import { demos } from '/lib/demos.js';
+    const list = document.getElementById('demos');
+    for (const d of demos) {
+      const live = d.status === 'live';
+      const li = document.createElement('li');
+      const el = document.createElement(live ? 'a' : 'div');
+      el.className = 'card';
+      if (live) el.href = `/demos/${d.slug}/`;
+      el.innerHTML =
+        `<span class="pill ${live ? 'live' : ''}">${live ? 'live' : 'planned'}</span>` +
+        `<span class="n">DEMO ${d.n}</span><h3></h3><p></p>`;
+      el.querySelector('h3').textContent = d.title;
+      el.querySelector('p').textContent = d.blurb;
+      li.append(el);
+      list.append(li);
+    }
+  </script>
+</body>
+</html>

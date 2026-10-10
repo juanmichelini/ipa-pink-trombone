@@ -1,0 +1,38 @@
+# Contributing
+
+## Everything is an issue and a PR
+
+1. Open or pick an issue. Use the *Experiment / task* template. State acceptance criteria as checkboxes.
+2. Branch from `main`: `demo/01-vowels`, `lib/engine`, `fix/…`, `docs/…`.
+3. Open a PR that says `Closes #N`. Fill in the template, including how you verified it.
+4. Merge when `npm test` is green. Squash merge, so `main` reads as one commit per issue.
+
+No direct pushes to `main`.
+
+## Literate source
+
+Each source file is a document first.
+
+- A line that starts with `//` **in column 0** is prose. It is rendered as Markdown-lite: `#`/`##` headings,
+  paragraphs, `- ` lists, `` `code` ``, `**bold**`, `*em*`, `[links](https://example.com)`.
+- Everything else is code. Indented `//` comments stay ordinary code comments.
+- Write the *why* in the prose, in the order a reader needs it, then the code. Think "essay with code in it".
+- Pure scripts: plain ES modules, no framework, no bundler, no dependencies.
+
+Preview any file at `/literate/?src=path/to/file.js` while the static server runs.
+
+## Shared library first
+
+If two demos need it, it goes in `lib/`. A demo folder should contain only the page, its `main.js` and whatever is
+unique to that experiment.
+
+## Tests without ears
+
+We cannot hear CI. So the synthesis is tested numerically: render offline, estimate formants from the tract's impulse
+response, and assert on relationships (`/i/` has a higher F2 than `/u/`) rather than on exact numbers. If you add a
+phonetic claim, add a test for it. `npm test` needs no install.
+
+## Data
+
+Language data lives in `data/` as plain text (TSV). A dictionary change is a PR like any other; a test checks that
+every IPA symbol in it can actually be sounded.

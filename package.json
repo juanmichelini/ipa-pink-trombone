@@ -1,0 +1,14 @@
+{
+  "name": "ipa-pink-trombone",
+  "version": "0.1.0",
+  "description": "IPA to mouth lessons: incremental experiments with a Pink-Trombone-style vocal tract",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "start": "python3 -m http.server 8000"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
