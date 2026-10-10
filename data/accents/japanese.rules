@@ -1,0 +1,19 @@
+@name Japanese speaker of English
+@about r and l merge into a tap, and every consonant cluster gets a vowel inserted to make syllables like ka, ri, tsu.
+@rhythm syllable
+@strip length
+ɹ > ɾ
+l > ɾ
+θ > s
+ð > z
+v > b
+æ > a
+ɪ > i
+ʊ > u
+ə > a
+ʌ > a
+ɜ > a
+# Consonants cannot end a syllable, so a vowel is added. The vowel depends on the consonant.
+∅ > i / {ʃ,t͡ʃ,d͡ʒ} _ {C,#}
+∅ > o / {t,d} _ {C,#}
+∅ > u / C _ {C,#}
