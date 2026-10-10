@@ -43,7 +43,11 @@ test('live mode makes sound, release fades to silence', async () => {
   assert.ok(rms(held, 128 * 30) > 0.01, 'audible while held');
   assert.ok(held.every(Number.isFinite));
   p.onMessage({ type: 'release' });
-  pull(p, 200);
+  const tail = pull(p, 20);          // the first 60 ms after release
+  assert.ok(rms(tail) > 0.4 * rms(held, 128 * 30), 'the sound rings on after release instead of cutting off');
+  const later = pull(p, 30);         // about 70 to 170 ms
+  assert.ok(rms(later) < rms(tail), 'and it decays');
+  pull(p, 400);
   const after = pull(p, 20);
   assert.ok(rms(after) < 1e-4, 'silent after release');
 });
@@ -52,7 +56,7 @@ test('playing a score reports when it ends', async () => {
   const P = await loadProcessor();
   const p = new P({});
   p.onMessage({ type: 'play', score: { keyframes: [{ t: 0, intensity: 1 }, { t: 0.1 }], duration: 0.1 } });
-  const out = pull(p, 100);
+  const out = pull(p, 200);
   assert.ok(rms(out, 0, 128 * 20) > 0.01);
   assert.ok(p.port.posted.some((m) => m.type === 'ended'));
 });
