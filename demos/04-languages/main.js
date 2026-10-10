@@ -16,6 +16,7 @@ import { DEFAULT_FRAME } from '../../lib/score.js';
 import { shapeOf } from '../../lib/tractshape.js';
 import { drawTract } from '../../lib/ui/tractview.js';
 import { lazySynth, playAnimated, downloadWav, log, unlog, round } from '../../lib/ui/demo.js';
+import { t, tp } from '../../lib/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const synthHolder = lazySynth();
@@ -49,10 +50,10 @@ async function convert() {
     const ipa = row.insertCell();
     ipa.textContent = w.ipa ? `/${w.ipa}/` : '—';
     ipa.style.fontFamily = 'var(--ipa)';
-    row.insertCell().textContent = w.source;
+    row.insertCell().textContent = t(`lang.src.${w.source}`);
   }
   const missing = result.words.filter((w) => !w.ipa).map((w) => w.word);
-  $('missing').textContent = missing.length ? `Not in the ${language.name} dictionary, skipped: ${missing.join(', ')}` : '';
+  $('missing').textContent = missing.length ? t('lang.missing', { language: language.name, words: missing.join(', ') }) : '';
   current = plan(result.ipa, { f0: state.f0 });
   current.text = result.ipa;
 }
@@ -81,11 +82,11 @@ async function say() {
   if (!current || !current.text) return;
   if (playing) playing.cancel();
   const p = current;
-  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = `Audio could not start: ${error.message}`; return; }
+  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   playing = playAnimated(synth, p.score, (frame, time) => {
     drawTract($('tract'), shapeOf(frame));
     const m = markAt(p.marks, time);
-    if (m) $('readout').textContent = `/${p.text}/\nnow: [${m.symbol}]`;
+    if (m) $('readout').textContent = t('lang.now', { ipa: p.text, symbol: m.symbol });
   });
   await playing.done;
 }

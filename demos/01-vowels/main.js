@@ -17,6 +17,7 @@ import { formants } from '../../lib/analysis.js';
 import { drawTract } from '../../lib/ui/tractview.js';
 import { createVowelChart } from '../../lib/ui/vowelchart.js';
 import { lazySynth, playAnimated, downloadWav, log, unlog, round } from '../../lib/ui/demo.js';
+import { t, tp } from '../../lib/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const synthHolder = lazySynth();
@@ -69,16 +70,17 @@ function refresh(frame = frameNow(), cursor = { b: state.b, h: state.h }, vowel 
   chart.setCursor(cursor.b, cursor.h);
   chart.highlight(vowel.symbol);
   drawTract($('tract'), shapeOf(frame));
-  $('roundingOut').textContent = state.rounded < 0.15 ? 'spread' : state.rounded > 0.85 ? 'rounded' : 'half';
+  $('roundingOut').textContent = t(state.rounded < 0.15 ? 'rounding.spread' : state.rounded > 0.85 ? 'rounding.rounded' : 'rounding.half');
   if (pending) return;
   pending = true;
   requestAnimationFrame(() => {
     pending = false;
     const [f1, f2] = formants(frame, { steps: 8192, count: 2 });
     $('readout').textContent =
-      `[${vowel.symbol}] ${vowel.name}\n` +
-      `measured F1 ${Math.round(f1)} Hz, F2 ${Math.round(f2)} Hz\n` +
-      `reference F1 ${vowel.f1} Hz, F2 ${vowel.f2} Hz${vowel.approx ? ' (approx.)' : ''}`;
+      t('vowel.readout', {
+        symbol: vowel.symbol, name: vowel.name.split(' ').map(tp).join(' '), f1: Math.round(f1), f2: Math.round(f2),
+        rf1: vowel.f1, rf2: vowel.f2, approx: vowel.approx ? t('vowel.approx') : '',
+      });
   });
 }
 $('readout').style.whiteSpace = 'pre-line';
@@ -97,7 +99,7 @@ async function startSound() {
     if (held) synth.live(frameNow());
     $('status').textContent = '';
   } catch (error) {
-    $('status').textContent = `Audio could not start: ${error.message}`;
+    $('status').textContent = t('common.audioError', { message: error.message });
   }
 }
 function updateSound() { if (synth && held) synth.live(frameNow()); }
@@ -110,7 +112,7 @@ for (const symbol of VOWEL_SYMBOLS) {
   const v = vowelBySymbol(symbol);
   const button = document.createElement('button');
   button.textContent = symbol;
-  button.title = v.name;
+  button.title = v.name.split(' ').map(tp).join(' ');
   const down = () => { applyPosition({ b: v.b, h: v.h, rounded: v.rounded ? 1 : 0 }); startSound(); button.classList.add('active'); };
   const up = () => { stopSound(); button.classList.remove('active'); };
   button.addEventListener('pointerdown', down);
@@ -123,7 +125,7 @@ for (const symbol of VOWEL_SYMBOLS) {
 
 // ## Controls
 const showPitch = () => { $('pitchOut').textContent = `${Math.round(state.f0)} Hz`; };
-const showVoice = () => { $('tensenessOut').textContent = state.tenseness < 0.35 ? 'breathy' : state.tenseness > 0.8 ? 'pressed' : 'modal'; };
+const showVoice = () => { $('tensenessOut').textContent = t(state.tenseness < 0.35 ? 'voice.breathy' : state.tenseness > 0.8 ? 'voice.pressed' : 'voice.modal'); };
 $('rounding').addEventListener('input', (e) => { state.rounded = Number(e.target.value); refresh(); updateSound(); });
 $('pitch').addEventListener('input', (e) => { state.f0 = log(Number(e.target.value), ...PITCH); showPitch(); updateSound(); });
 $('tenseness').addEventListener('input', (e) => { state.tenseness = Number(e.target.value); showVoice(); updateSound(); });
@@ -140,12 +142,12 @@ async function playSequence(symbols) {
   if (playing) playing.cancel();
   const sequence = vowelSequence(symbols, { f0: state.f0, tenseness: state.tenseness });
   lastSequence = sequence;
-  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = `Audio could not start: ${error.message}`; return; }
+  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   playing = playAnimated(synth, sequence, (frame, t) => {
     const c = cursorAt(sequence, t);
     refresh(frame, c, vowelBySymbol(c.symbol));
   });
-  $('status').textContent = `Playing ${symbols.join(' ')}`;
+  $('status').textContent = t('status.playing', { list: symbols.join(' ') });
   await playing.done;
   $('status').textContent = '';
 }

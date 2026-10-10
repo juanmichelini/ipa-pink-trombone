@@ -20,6 +20,7 @@ import { shapeOf } from '../../lib/tractshape.js';
 import { drawTract } from '../../lib/ui/tractview.js';
 import { createConsonantTable } from '../../lib/ui/consonanttable.js';
 import { lazySynth, playAnimated, downloadWav, log, unlog, round } from '../../lib/ui/demo.js';
+import { t, tp } from '../../lib/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const synthHolder = lazySynth();
@@ -45,7 +46,7 @@ function show(frame, symbol) {
   drawTract($('tract'), shapeOf(frame));
   const c = consonantBySymbol(symbol);
   if (!c) return;
-  $('readout').textContent = `[${symbol}] ${c.voiced ? 'voiced' : 'voiceless'} ${c.place} ${c.manner}`;
+  $('readout').textContent = t('cons.readout', { symbol, voicing: tp(c.voiced ? 'voiced' : 'voiceless'), place: tp(c.place), manner: tp(c.manner) });
   table.highlight(symbol);
 }
 $('readout').style.whiteSpace = 'pre-line';
@@ -61,7 +62,7 @@ async function press(symbol) {
   if (playing) playing.cancel();
   const g = gestureOf(symbol);
   lastScore = g.score;
-  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = `Audio could not start: ${error.message}`; return; }
+  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   if (held !== symbol && g.kind === 'continuant') return; // let go before audio was ready
   if (g.kind === 'continuant' && state.carrier === 'none') {
     // Held for as long as the pointer is down.
@@ -87,7 +88,7 @@ async function playFamily(filter, label) {
   const parts = symbols.map((s) => gestureOf(s).score);
   const score = concatScores(parts, 0.1);
   lastScore = score;
-  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = `Audio could not start: ${error.message}`; return; }
+  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   const starts = [];
   let t = 0;
   for (const p of parts) { starts.push(t); t += p.duration + 0.1; }
@@ -95,7 +96,7 @@ async function playFamily(filter, label) {
     let i = starts.findIndex((s, k) => time >= s && (k === starts.length - 1 || time < starts[k + 1]));
     show(frame, symbols[Math.max(0, i)]);
   });
-  $('status').textContent = `Playing ${label}: ${symbols.join(' ')}`;
+  $('status').textContent = t('status.playingLabel', { label: tp(label), list: symbols.join(' ') });
   await playing.done;
   $('status').textContent = '';
 }
@@ -112,5 +113,5 @@ $('aspirated').addEventListener('change', (e) => { state.aspirated = e.target.ch
 $('pitch').addEventListener('input', (e) => { state.f0 = log(Number(e.target.value), ...PITCH); $('pitchOut').textContent = `${Math.round(state.f0)} Hz`; });
 $('pitch').value = unlog(state.f0, ...PITCH);
 $('pitchOut').textContent = `${Math.round(state.f0)} Hz`;
-for (const note of NOT_MODELLED) { const li = document.createElement('li'); li.textContent = note; $('notModelled').append(li); }
+NOT_MODELLED.forEach((note, i) => { const li = document.createElement('li'); li.textContent = t(`nm.${i + 1}`); $('notModelled').append(li); });
 drawTract($('tract'), shapeOf(DEFAULT_FRAME));

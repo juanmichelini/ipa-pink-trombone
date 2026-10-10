@@ -1,27 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ipa-pink-trombone</title>
-  <meta name="description" content="IPA to mouth lessons: incremental experiments with a Pink-Trombone-style vocal tract.">
-  <link rel="stylesheet" href="/css/site.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>ipa-pink-trombone</title>
+<meta content="IPA to mouth lessons: incremental experiments with a Pink-Trombone-style vocal tract." data-i18n-attr="content:home.meta1" name="description"/>
+<link href="/css/site.css" rel="stylesheet"/>
 </head>
 <body>
-  <nav class="top"><strong>ipa-pink-trombone</strong>
-    <a href="https://github.com/juanmichelini/ipa-pink-trombone">GitHub</a>
-    <a href="/literate/?src=lib/literate.js">Read the source</a>
-  </nav>
-
-  <h1>IPA to mouth lessons</h1>
-  <p class="tag">A ladder of small experiments, each one adding a single idea.</p>
-  <p>Inspired by <a href="https://dood.al/pinktrombone/">Pink Trombone</a> by Neil Thapen.
+<nav class="top"><strong>ipa-pink-trombone</strong>
+<a href="https://github.com/juanmichelini/ipa-pink-trombone">GitHub</a>
+<a data-i18n="home.a1" href="/literate/?src=lib/literate.js">Read the source</a>
+</nav>
+<h1 data-i18n="home.h11">IPA to mouth lessons</h1>
+<p class="tag" data-i18n="home.p1">A ladder of small experiments, each one adding a single idea.</p>
+<p data-i18n-html="home.p2">Inspired by <a href="https://dood.al/pinktrombone/">Pink Trombone</a> by Neil Thapen.
      Click an IPA symbol, watch a vocal tract move, hear what comes out.</p>
-
-  <ul class="grid" id="demos"></ul>
-
-  <script type="module">
+<ul class="grid" id="demos"></ul>
+<script type="module">
     import { demos } from '/lib/demos.js';
+    import { t } from '/lib/i18n.js';
     const list = document.getElementById('demos');
     for (const d of demos) {
       const live = d.status === 'live';
@@ -30,10 +29,10 @@
       el.className = 'card';
       if (live) el.href = `/demos/${d.slug}/`;
       el.innerHTML =
-        `<span class="pill ${live ? 'live' : ''}">${live ? 'live' : 'planned'}</span>` +
-        `<span class="n">DEMO ${d.n}</span><h3></h3><p></p>`;
-      el.querySelector('h3').textContent = d.title;
-      el.querySelector('p').textContent = d.blurb;
+        `<span class="pill ${live ? 'live' : ''}">${t(live ? 'home.live' : 'home.planned')}</span>` +
+        `<span class="n">${t('home.demo', { n: d.n })}</span><h3></h3><p></p>`;
+      el.querySelector('h3').textContent = t(`demo.${d.n}.title`);
+      el.querySelector('p').textContent = t(`demo.${d.n}.blurb`);
       li.append(el);
       list.append(li);
     }

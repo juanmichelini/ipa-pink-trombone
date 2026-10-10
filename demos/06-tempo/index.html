@@ -1,51 +1,48 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Demo 6 · Tempo · ipa-pink-trombone</title>
-  <meta name="description" content="Speak faster or slower without turning to mush: vowels shorten more than consonants, and fast vowels undershoot.">
-  <link rel="stylesheet" href="/css/site.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title data-i18n="d06.title1">Demo 6 · Tempo · ipa-pink-trombone</title>
+<meta content="Speak faster or slower without turning to mush: vowels shorten more than consonants, and fast vowels undershoot." data-i18n-attr="content:d06.meta1" name="description"/>
+<link href="/css/site.css" rel="stylesheet"/>
 </head>
 <body>
-  <nav class="top">
-    <a href="/"><strong>ipa-pink-trombone</strong></a>
-    <span>Demo 6 · Tempo</span>
-    <a href="/literate/?src=demos/06-tempo/main.js">Read this demo's source</a>
-    <a href="/literate/?src=lib/planner.js">Read the planner</a>
-  </nav>
-
-  <h1>Tempo</h1>
-  <p class="tag">Faster is not the same as sped up.</p>
-  <p>Real speakers shorten vowels a lot and consonants a little, because a consonant has a physical
+<nav class="top">
+<a href="/"><strong>ipa-pink-trombone</strong></a>
+<span data-i18n="d06.span1">Demo 6 · Tempo</span>
+<a data-i18n="d01.a1" href="/literate/?src=demos/06-tempo/main.js">Read this demo's source</a>
+<a data-i18n="d03.a1" href="/literate/?src=lib/planner.js">Read the planner</a>
+</nav>
+<h1 data-i18n="d06.h11">Tempo</h1>
+<p class="tag" data-i18n="d06.p1">Faster is not the same as sped up.</p>
+<p data-i18n-html="d06.p2">Real speakers shorten vowels a lot and consonants a little, because a consonant has a physical
      job to do. Fast vowels also fall short of their targets. Compare the two ways of going fast:
      <strong>speech-like</strong> and <strong>naive</strong>, which squeezes the whole score evenly.</p>
-
-  <section class="panel">
-    <label for="ipa" class="note">IPA</label>
-    <textarea id="ipa" rows="2" spellcheck="false" style="width:100%;font:1.4rem var(--ipa)">ˈkwɪkli ˈsɪksti ˈsɛvən ˈbɪɡ ˈblæk ˈbɛɹɪz</textarea>
-    <div class="row" style="margin-top:.6rem">
-      <label>Speed <input type="range" id="rate" min="0" max="1" step="0.001"> <output id="rateOut"></output></label>
-      <label><input type="radio" name="mode" value="speech" checked> Speech-like</label>
-      <label><input type="radio" name="mode" value="naive"> Naive squeeze</label>
-    </div>
-    <div class="row" style="margin-top:.8rem">
-      <button id="say" class="primary">Say</button>
-      <button id="ladder">Slow, medium, fast, very fast</button>
-      <button id="stop">Stop</button>
-      <button id="download">Download WAV</button>
-    </div>
-    <p class="note" id="status" role="status"></p>
-    <div id="bars" aria-label="Segment durations" style="display:flex;height:34px;margin-top:.6rem;border:1px solid var(--line);border-radius:6px;overflow:hidden"></div>
-    <p class="note">Wider = longer. Pink: vowels. Grey: consonants. Watch how the grey stays wide when the pink shrinks.</p>
-  </section>
-
-  <section class="panel" aria-label="Vocal tract">
-    <canvas id="tract" width="640" height="400" aria-label="Side view of the vocal tract"></canvas>
-    <p class="readout" id="readout" role="status" aria-live="polite"></p>
-  </section>
-
-  <script type="module" src="/demos/06-tempo/main.js"></script>
-  <script type="module" src="/lib/ui/lessonnav.js"></script>
+<section class="panel">
+<label class="note" data-i18n="d03.label1" for="ipa">IPA</label>
+<textarea id="ipa" rows="2" spellcheck="false" style="width:100%;font:1.4rem var(--ipa)">ˈkwɪkli ˈsɪksti ˈsɛvən ˈbɪɡ ˈblæk ˈbɛɹɪz</textarea>
+<div class="row" style="margin-top:.6rem">
+<label><span data-i18n="d06.t1">Speed</span> <input id="rate" max="1" min="0" step="0.001" type="range"/> <output id="rateOut"></output></label>
+<label><input checked="" name="mode" type="radio" value="speech"/> <span data-i18n="d06.t2">Speech-like</span></label>
+<label><input name="mode" type="radio" value="naive"/> <span data-i18n="d06.t3">Naive squeeze</span></label>
+</div>
+<div class="row" style="margin-top:.8rem">
+<button class="primary" data-i18n="d03.button1" id="say">Say</button>
+<button data-i18n="d06.button1" id="ladder">Slow, medium, fast, very fast</button>
+<button data-i18n="d01.button3" id="stop">Stop</button>
+<button data-i18n="d01.button4" id="download">Download WAV</button>
+</div>
+<p class="note" id="status" role="status"></p>
+<div aria-label="Segment durations" data-i18n-attr="aria-label:d06.attr1" id="bars" style="display:flex;height:34px;margin-top:.6rem;border:1px solid var(--line);border-radius:6px;overflow:hidden"></div>
+<p class="note" data-i18n="d06.p3">Wider = longer. Purple: vowels. Grey: consonants. Watch how the grey stays wide when the purple shrinks.</p>
+</section>
+<section aria-label="Vocal tract" class="panel" data-i18n-attr="aria-label:d01.attr2">
+<canvas aria-label="Side view of the vocal tract" height="400" id="tract" width="640"></canvas>
+<p aria-live="polite" class="readout" id="readout" role="status"></p>
+</section>
+<script src="/demos/06-tempo/main.js" type="module"></script>
+<script src="/lib/ui/lessonnav.js" type="module"></script>
 </body>
 </html>

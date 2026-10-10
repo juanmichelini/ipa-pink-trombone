@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { neighbours, slugFromPath, lessonNavHtml } from '../lib/ui/lessonnav.js';
 import { demos } from '../lib/demos.js';
+import { setCatalogues } from '../lib/i18n.js';
+
+const english = JSON.parse(readFileSync('data/i18n/en.json', 'utf8'));
+setCatalogues(english);
 
 test('neighbours walk the ladder in order and stop at the ends', () => {
   assert.equal(neighbours('01-vowels').previous, null);

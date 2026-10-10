@@ -16,6 +16,7 @@ import { markAt } from '../../lib/planner.js';
 import { shapeOf } from '../../lib/tractshape.js';
 import { drawTract } from '../../lib/ui/tractview.js';
 import { lazySynth, playAnimated, downloadWav, log, unlog, round } from '../../lib/ui/demo.js';
+import { t, tp } from '../../lib/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const synthHolder = lazySynth();
@@ -33,17 +34,17 @@ function showControls() {
   $('pitch').value = unlog(voice.f0, ...PITCH);
   $('tenseness').value = voice.tenseness;
   $('vibrato').value = voice.vibratoDepth;
-  $('tractOut').textContent = `${voice.tractCm.toFixed(1)} cm · formants ×${formantScale(voice.tractCm).toFixed(2)}`;
+  $('tractOut').textContent = t('voices.tract', { cm: voice.tractCm.toFixed(1), scale: formantScale(voice.tractCm).toFixed(2) });
   $('pitchOut').textContent = `${Math.round(voice.f0)} Hz`;
-  $('tensenessOut').textContent = voice.tenseness < 0.35 ? 'breathy' : voice.tenseness > 0.8 ? 'pressed' : 'modal';
-  $('vibratoOut').textContent = voice.vibratoDepth < 0.003 ? 'none' : `${(voice.vibratoDepth * 100).toFixed(1)}%`;
+  $('tensenessOut').textContent = t(voice.tenseness < 0.35 ? 'voice.breathy' : voice.tenseness > 0.8 ? 'voice.pressed' : 'voice.modal');
+  $('vibratoOut').textContent = voice.vibratoDepth < 0.003 ? t('voice.none') : `${(voice.vibratoDepth * 100).toFixed(1)}%`;
   for (const b of $('voices').children) b.classList.toggle('active', b.dataset.id === voice.id);
   drawTract($('tract'), shapeOf(DEFAULT_FRAME, { tractLength: voice.tractCm }));
 }
 
 for (const v of VOICES) {
   const b = document.createElement('button');
-  b.textContent = v.label;
+  b.textContent = t(`voice.label.${v.id}`);
   b.dataset.id = v.id;
   b.style.fontSize = '1rem';
   b.addEventListener('click', () => { voice = { ...v }; showControls(); say(); });
@@ -62,12 +63,12 @@ slider('vibrato', (x) => { voice.vibratoDepth = x; });
 async function sayWith(v, text = $('ipa').value) {
   const utterance = speak(text, v);
   current = utterance;
-  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = `Audio could not start: ${error.message}`; return; }
+  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   synth.setTractLength(utterance.tractLength);
   playing = playAnimated(synth, utterance.score, (frame, time) => {
     drawTract($('tract'), shapeOf(frame, { tractLength: utterance.tractLength }));
     const m = markAt(utterance.marks, time);
-    $('readout').textContent = `${v.label || 'Custom'} · ${utterance.tractLength.toFixed(1)} cm · ${Math.round(v.f0)} Hz${m ? ` · [${m.symbol}]` : ''}`;
+    $('readout').textContent = t('voices.readout', { label: v.id ? t(`voice.label.${v.id}`) : t('voices.custom'), cm: utterance.tractLength.toFixed(1), hz: Math.round(v.f0), mark: m ? ` · [${m.symbol}]` : '' });
   });
   await playing.done;
 }
@@ -80,7 +81,7 @@ async function sayEveryVoice() {
   const token = (sayEveryVoice.token = (sayEveryVoice.token || 0) + 1);
   for (const v of VOICES) {
     if (sayEveryVoice.token !== token) return;
-    $('status').textContent = `${v.label}`;
+    $('status').textContent = t(`voice.label.${v.id}`);
     await sayWith(v);
     await new Promise((r) => setTimeout(r, 250));
   }

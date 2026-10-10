@@ -20,6 +20,7 @@ import { DEFAULT_FRAME } from '../../lib/score.js';
 import { shapeOf } from '../../lib/tractshape.js';
 import { drawTract } from '../../lib/ui/tractview.js';
 import { lazySynth, playAnimated, downloadWav } from '../../lib/ui/demo.js';
+import { t, tp } from '../../lib/i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const synthHolder = lazySynth();
@@ -28,12 +29,12 @@ let playing = null;
 let current = null;
 
 const EXAMPLES = [
-  ['The cats are chasing the mice', 'ðə ˈkæts ɑː ˈtʃeɪsɪŋ ðə ˈmaɪs'],
-  ['Cats chase mice', 'ˈkæts ˈtʃeɪs ˈmaɪs'],
-  ['Spanish: el gato come pescado', 'el ˈɡato ˈkome pesˈkado'],
-  ['French: je suis dans la maison', 'ʒə sɥi dɑ̃ la mɛˈzɔ̃'],
-  ['English: a beautiful afternoon', 'ə ˈbjuːtɪfəl ˌɑːftəˈnuːn'],
-  ['Italian-ish: la bella vita', 'la ˈbɛlla ˈvita'],
+  [t('rhythm.ex.1'), 'ðə ˈkæts ɑː ˈtʃeɪsɪŋ ðə ˈmaɪs'],
+  [t('rhythm.ex.2'), 'ˈkæts ˈtʃeɪs ˈmaɪs'],
+  [t('rhythm.ex.3'), 'el ˈɡato ˈkome pesˈkado'],
+  [t('rhythm.ex.4'), 'ʒə sɥi dɑ̃ la mɛˈzɔ̃'],
+  [t('rhythm.ex.5'), 'ə ˈbjuːtɪfəl ˌɑːftəˈnuːn'],
+  [t('rhythm.ex.6'), 'la ˈbɛlla ˈvita'],
 ];
 const BEATS_SHORT = 'ˈkæts ˈtʃeɪs ˈmaɪs';
 const BEATS_LONG = 'ˈkæts ɑː ˈtʃeɪsɪŋ ðə ˈmaɪs';
@@ -68,17 +69,16 @@ function showLanes(u) {
     el.style.placeItems = 'center';
     el.style.overflow = 'hidden';
     el.textContent = labels[n] || '';
-    el.title = `${Math.round(ds[n] * 1000)} ms`;
+    el.title = t('rhythm.ms', { ms: Math.round(ds[n] * 1000) });
     lanes.append(el);
   });
   const pvi = nPVI(ds);
-  $('stats').textContent = `${u.syllables.length} syllables in ${u.duration.toFixed(2)} s · unevenness (nPVI) ${pvi.toFixed(0)}` +
-    ` (about 20 reads as syllable-timed, 55 or more as stress-timed)`;
+  $('stats').textContent = t('rhythm.stats', { n: u.syllables.length, sec: u.duration.toFixed(2), pvi: pvi.toFixed(0) });
 }
 
 // ## Playing
 async function play(u, label = '') {
-  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = `Audio could not start: ${error.message}`; return; }
+  try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   showLanes(u);
   playing = playAnimated(synth, u.score, (frame, t) => {
     drawTract($('tract'), shapeOf(frame));
@@ -105,9 +105,9 @@ async function compare() {
     for (const ipa of [BEATS_SHORT, BEATS_LONG]) {
       if (compare.token !== token) return;
       const u = build(ipa, mode);
-      $('status').textContent = `${mode}-timed · ${ipa} · ${u.duration.toFixed(2)} s`;
-      lines.push(`${mode}: ${u.duration.toFixed(2)} s`);
-      await play(u, `${mode} · `);
+      $('status').textContent = t('rhythm.status', { mode: t(`rhythm.mode.${mode}`), ipa, sec: u.duration.toFixed(2) });
+      lines.push(`${t(`rhythm.mode.${mode}`)}: ${u.duration.toFixed(2)} s`);
+      await play(u, `${t(`rhythm.mode.${mode}`)} · `);
       await new Promise((r) => setTimeout(r, 350));
     }
   }

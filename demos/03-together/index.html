@@ -1,54 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Demo 3 · Together · ipa-pink-trombone</title>
-  <meta name="description" content="Type IPA and hear a vocal tract say it, with the tongue gliding between vowels through the consonants.">
-  <link rel="stylesheet" href="/css/site.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title data-i18n="d03.title1">Demo 3 · Together · ipa-pink-trombone</title>
+<meta content="Type IPA and hear a vocal tract say it, with the tongue gliding between vowels through the consonants." data-i18n-attr="content:d03.meta1" name="description"/>
+<link href="/css/site.css" rel="stylesheet"/>
 </head>
 <body>
-  <nav class="top">
-    <a href="/"><strong>ipa-pink-trombone</strong></a>
-    <span>Demo 3 · Together</span>
-    <a href="/literate/?src=demos/03-together/main.js">Read this demo's source</a>
-    <a href="/literate/?src=lib/planner.js">Read the planner</a>
-  </nav>
-
-  <h1>Together</h1>
-  <p class="tag">Type IPA, press Say.</p>
-  <p>Vowels from Demo 1 and consonants from Demo 2, joined by one rule: the tongue leaves the last vowel
+<nav class="top">
+<a href="/"><strong>ipa-pink-trombone</strong></a>
+<span data-i18n="d03.span1">Demo 3 · Together</span>
+<a data-i18n="d01.a1" href="/literate/?src=demos/03-together/main.js">Read this demo's source</a>
+<a data-i18n="d03.a1" href="/literate/?src=lib/planner.js">Read the planner</a>
+</nav>
+<h1 data-i18n="d03.h11">Together</h1>
+<p class="tag" data-i18n="d03.p1">Type IPA, press Say.</p>
+<p data-i18n-html="d03.p2">Vowels from Demo 1 and consonants from Demo 2, joined by one rule: the tongue leaves the last vowel
      and arrives at the next while the consonant is made. Stress marks (<code>ˈ</code> <code>ˌ</code>),
      length (<code>ː</code>), aspiration (<code>ʰ</code>), nasalisation and spaces are understood.</p>
-
-  <section class="panel">
-    <label for="ipa" class="note">IPA</label>
-    <textarea id="ipa" rows="2" spellcheck="false" style="width:100%;font:1.4rem var(--ipa)">ˈhɛloʊ wɜːld</textarea>
-    <p class="note" id="unknown" role="status"></p>
-    <div class="row">
-      <button id="say" class="primary">Say</button>
-      <button id="stop">Stop</button>
-      <button id="download">Download WAV</button>
-      <label>Pitch <input type="range" id="pitch" min="0" max="1" step="0.001" value="0.3"> <output id="pitchOut"></output></label>
-    </div>
-    <p class="note">Examples:</p>
-    <div id="examples" class="vowel-buttons"></div>
-  </section>
-
-  <div class="demo-grid">
-    <section class="panel" aria-label="Segments">
-      <div id="segments" class="vowel-buttons" aria-live="polite"></div>
-      <p class="note">Click a symbol to hear it alone, or to add it at the end.</p>
-      <div id="palette"></div>
-    </section>
-    <section class="panel" aria-label="Vocal tract">
-      <canvas id="tract" width="640" height="400" aria-label="Side view of the vocal tract"></canvas>
-      <p class="readout" id="readout" role="status" aria-live="polite"></p>
-    </section>
-  </div>
-  <p class="note" id="status"></p>
-
-  <script type="module" src="/demos/03-together/main.js"></script>
-  <script type="module" src="/lib/ui/lessonnav.js"></script>
+<section class="panel">
+<label class="note" data-i18n="d03.label1" for="ipa">IPA</label>
+<textarea id="ipa" rows="2" spellcheck="false" style="width:100%;font:1.4rem var(--ipa)">ˈhɛloʊ wɜːld</textarea>
+<p class="note" id="unknown" role="status"></p>
+<div class="row">
+<button class="primary" data-i18n="d03.button1" id="say">Say</button>
+<button data-i18n="d01.button3" id="stop">Stop</button>
+<button data-i18n="d01.button4" id="download">Download WAV</button>
+<label><span data-i18n="d01.t2">Pitch</span> <input id="pitch" max="1" min="0" step="0.001" type="range" value="0.3"/> <output id="pitchOut"></output></label>
+</div>
+<p class="note" data-i18n="d03.p3">Examples:</p>
+<div class="vowel-buttons" id="examples"></div>
+</section>
+<div class="demo-grid">
+<section aria-label="Segments" class="panel" data-i18n-attr="aria-label:d03.attr1">
+<div aria-live="polite" class="vowel-buttons" id="segments"></div>
+<p class="note" data-i18n="d03.p4">Click a symbol to hear it alone, or to add it at the end.</p>
+<div id="palette"></div>
+</section>
+<section aria-label="Vocal tract" class="panel" data-i18n-attr="aria-label:d01.attr2">
+<canvas aria-label="Side view of the vocal tract" height="400" id="tract" width="640"></canvas>
+<p aria-live="polite" class="readout" id="readout" role="status"></p>
+</section>
+</div>
+<p class="note" id="status"></p>
+<script src="/demos/03-together/main.js" type="module"></script>
+<script src="/lib/ui/lessonnav.js" type="module"></script>
 </body>
 </html>

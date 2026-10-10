@@ -32,6 +32,12 @@ real-browser pass are still the best next contribution; see "Status" in the plan
 Status and design notes live in [`docs/PLAN.md`](docs/PLAN.md). Progress lives in
 [issues](../../issues) and [pull requests](../../pulls).
 
+## Languages
+
+The interface is translated into the ten languages of Demo 4 (English, Spanish, Mandarin, Hindi, Arabic, French, Bengali, Portuguese, Russian, Indonesian). The language is detected from the browser, can be forced with `?lang=es`, and can be changed from the menu at the top of every page (the choice is remembered). Arabic is laid out right to left.
+
+The translations were written by Claude and have not been reviewed by native speakers: corrections are very welcome as pull requests. The source code, the rule files of Demo 8 and the accent names in the code stay in English.
+
 ## Running it
 
 There is no build step and there are no dependencies.
