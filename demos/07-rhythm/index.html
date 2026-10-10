@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo 7 · Rhythm · ipa-pink-trombone</title>
+  <meta name="description" content="Stress-timed versus syllable-timed speech: same IPA, different clock.">
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <nav class="top">
+    <a href="/"><strong>ipa-pink-trombone</strong></a>
+    <span>Demo 7 · Rhythm</span>
+    <a href="/literate/?src=demos/07-rhythm/main.js">Read this demo's source</a>
+    <a href="/literate/?src=lib/rhythm.js">Read the rhythm</a>
+  </nav>
+
+  <h1>Rhythm</h1>
+  <p class="tag">Which clock does the language keep?</p>
+  <p>In a <strong>syllable-timed</strong> language every syllable takes about the same time. In a
+     <strong>stress-timed</strong> language the stressed syllables are the beats, and the syllables between
+     them are squeezed to fit, which is also why unstressed vowels shrink to <code>ə</code>. Real languages
+     only lean one way. Here you choose.</p>
+
+  <section class="panel">
+    <label for="ipa" class="note">IPA (mark stress with ˈ)</label>
+    <textarea id="ipa" rows="2" spellcheck="false" style="width:100%;font:1.4rem var(--ipa)"></textarea>
+    <div class="row" style="margin-top:.6rem">
+      <label>Example <select id="example"></select></label>
+      <label><input type="radio" name="mode" value="stress" checked> Stress-timed</label>
+      <label><input type="radio" name="mode" value="syllable"> Syllable-timed</label>
+      <label><input type="radio" name="mode" value="none"> No rhythm model</label>
+    </div>
+    <div class="row" style="margin-top:.8rem">
+      <button id="say" class="primary">Say</button>
+      <button id="compare">Same beats, more syllables</button>
+      <button id="stop">Stop</button>
+      <button id="download">Download WAV</button>
+    </div>
+    <p class="note" id="status" role="status"></p>
+    <div id="lanes" aria-label="Syllables" style="display:flex;height:44px;margin-top:.6rem;border:1px solid var(--line);border-radius:6px;overflow:hidden"></div>
+    <p class="note" id="stats"></p>
+    <p class="note">Each box is a syllable, as wide as it lasts. Dark boxes are stressed. In syllable-timed speech
+       the boxes are the same width; in stress-timed speech the dark ones recur at an even beat.</p>
+  </section>
+
+  <section class="panel" aria-label="Vocal tract">
+    <canvas id="tract" width="640" height="400" aria-label="Side view of the vocal tract"></canvas>
+    <p class="readout" id="readout" role="status" aria-live="polite"></p>
+  </section>
+
+  <script type="module" src="/demos/07-rhythm/main.js"></script>
+</body>
+</html>
