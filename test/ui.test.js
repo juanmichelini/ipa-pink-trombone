@@ -1,0 +1,69 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { toPixels, fromPixels, nearestVowel, interpret, symbolPlacement, CHART } from '../lib/ui/vowelchart.js';
+import { tractGeometry, centerline } from '../lib/ui/tractview.js';
+import { shapeOf } from '../lib/tractshape.js';
+import { vowelShape, vowelFrame } from '../lib/vowel-map.js';
+import { VOWELS } from '../lib/vowels.js';
+
+test('chart pixel conversions are inverses', () => {
+  const { px, py } = toPixels(0.3, 0.7);
+  const { x, y } = fromPixels(px, py);
+  assert.ok(Math.abs(x - 0.3) < 1e-9 && Math.abs(y - 0.7) < 1e-9);
+  assert.ok(px > CHART.x0 && py > CHART.y0);
+});
+
+test('pressing on a symbol snaps to that vowel, rounding included', () => {
+  for (const v of VOWELS) {
+    const p = symbolPlacement(v);
+    const hit = interpret(p.textX, p.py);
+    assert.equal(hit.symbol, v.symbol, `${v.symbol} should be hit by its own label`);
+    assert.equal(hit.rounded, v.rounded ? 1 : 0);
+  }
+});
+
+test('pressing in empty space gives a free position inside the chart', () => {
+  const far = interpret(CHART.x0 + 200, CHART.y0 + 20);
+  assert.equal(far.snapped, false);
+  assert.ok(far.b >= 0 && far.b <= 1 && far.h >= 0 && far.h <= 1);
+  const outside = interpret(-50, 500);
+  assert.ok(outside.b >= 0 && outside.b <= 1 && outside.h === 1);
+  assert.equal(nearestVowel(-100, -100), null);
+});
+
+test('the centre line is continuous and starts at the glottis end', () => {
+  const a = centerline(0), b = centerline(300), c = centerline(700);
+  assert.ok(a.y > b.y && b.y > c.y - 1, 'the path climbs and then levels off');
+  let last = centerline(0);
+  for (let s = 5; s <= 700; s += 5) {
+    const p = centerline(s);
+    assert.ok(Math.hypot(p.x - last.x, p.y - last.y) < 8, `jump at s=${s}`);
+    last = p;
+  }
+});
+
+test('tract geometry is finite and follows the diameters', () => {
+  const wide = tractGeometry(shapeOf({ tongueIndex: 14, tongueDiameter: 3.4 }));
+  const narrow = tractGeometry(shapeOf({ tongueIndex: 27, tongueDiameter: 2.05 }));
+  for (const g of [wide, narrow]) {
+    for (const p of [...g.outer, ...g.inner, ...g.noseTop, ...g.noseBottom]) assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y));
+    assert.equal(g.outer.length, g.inner.length);
+  }
+  const gap = (g, i) => Math.hypot(g.outer[i].x - g.inner[i].x, g.outer[i].y - g.inner[i].y);
+  const iTop = 27 + 1;
+  assert.ok(gap(narrow, iTop) < gap(wide, iTop), 'a tall tongue narrows the passage at the palate');
+});
+
+test('an open velum widens the nasal connector', () => {
+  const shut = tractGeometry(shapeOf({ velum: 0.01 }));
+  const open = tractGeometry(shapeOf({ velum: 0.4 }));
+  assert.ok(open.connector.width > 10 * shut.connector.width);
+});
+
+test('shapeOf copies, so later shapes do not change earlier ones', () => {
+  const a = shapeOf(vowelFrame(vowelShape(0, 0)));
+  const keep = a.diameter[30];
+  shapeOf(vowelFrame(vowelShape(1, 1)));
+  assert.equal(a.diameter[30], keep);
+  assert.equal(a.n, 44);
+});
