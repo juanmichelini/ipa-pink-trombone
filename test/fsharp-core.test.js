@@ -4,11 +4,11 @@ import { existsSync } from 'node:fs';
 import { VOWELS } from '../lib/vowels.js';
 
 // The F# core is compiled to `core/` by Fable (see `fsharp/README.md`). On a fresh checkout the
-// folder may not exist yet, so these tests skip with a reason. In CI they never skip: a missing
-// build is a failure.
+// folder may not exist yet, so these tests skip with a reason. The `fsharp` workflow sets
+// `REQUIRE_CORE`, and then a missing build is a failure instead of a skip.
 const file = new URL('../core/01-TongueSpace.fs.js', import.meta.url);
 const built = existsSync(file);
-if (!built && process.env.CI) throw new Error('core/01-TongueSpace.fs.js was not built');
+if (!built && process.env.REQUIRE_CORE) throw new Error('core/01-TongueSpace.fs.js was not built');
 const core = built ? await import(file.href) : null;
 const skip = built ? false : 'core/ is not built: see fsharp/README.md';
 

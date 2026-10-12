@@ -33,10 +33,20 @@ jobs:
         run: |
           fable --version
           fable fsharp/IpaTrombone.fsproj --outDir core
+      # The failure lines are also written as an annotation, so they show on the pull request
+      # without opening the log.
       - name: JavaScript tests
         env:
-          CI: "true"
-        run: npm test
+          REQUIRE_CORE: "1"
+        run: |
+          ls -R core | head -40
+          if ! npm test > test-output.txt 2>&1; then
+            summary=$(grep -E "^not ok|^# (pass|fail|skipped)|Error|expected|actual|core/" test-output.txt | head -40 | sed ':a;N;$!ba;s/\n/%0A/g')
+            echo "::error title=npm test failed::${summary}"
+            tail -60 test-output.txt
+            exit 1
+          fi
+          grep -E "^# (pass|fail|skipped)" test-output.txt
       # core/ is committed so the site stays static. Pull requests from this repository get the
       # regenerated files pushed to their branch. Never main: main only checks.
       - name: Push regenerated core/ to the pull request branch
