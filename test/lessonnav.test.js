@@ -36,3 +36,13 @@ test('every live demo page loads the lesson navigation', () => {
     assert.match(readFileSync(`demos/${d.slug}/index.html`, 'utf8'), /lib\/ui\/lessonnav\.js/, d.slug);
   }
 });
+
+test('with no catalogue at all, the buttons still show the registry titles and English labels', () => {
+  setCatalogues({}, {});
+  const html = lessonNavHtml('03-together');
+  assert.match(html, /2\. Consonants/);
+  assert.match(html, /4\. Languages/);
+  assert.match(html, /All lessons · 3 of 8/);
+  assert.doesNotMatch(html, /demo\.\d|lesson\./);
+  setCatalogues(english);
+});
