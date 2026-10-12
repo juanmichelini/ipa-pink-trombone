@@ -36,7 +36,6 @@ code { font-family: var(--mono); font-size: .92em; background: var(--accent-soft
 nav.top { display: flex; flex-wrap: wrap; gap: .4rem 1rem; align-items: baseline; font: .95rem var(--serif); color: var(--muted); }
 nav.top a { text-decoration: none; }
 nav.top strong { color: var(--ink); }
-.tag { color: var(--muted); font-style: italic; margin-top: 0; }
 
 /* Landing page */
 .grid { display: grid; gap: .9rem; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); padding: 0; list-style: none; }
@@ -129,8 +128,8 @@ canvas, svg, .ipa-table, .vowel-buttons, textarea.ipa, #ipa { direction: ltr; }
   body:has(#tract) > * { order: 2; }
   body:has(#tract) .demo-grid { display: contents; }
   body:has(#tract) .demo-grid > * { order: 2; }
-  body:has(#tract) > nav.top, body:has(#tract) > h1, body:has(#tract) > p.tag { order: 0; }
+  body:has(#tract) > nav.top, body:has(#tract) > h1 { order: 0; }
   body:has(#tract) section:has(> #tract) { order: 1; margin-top: .5rem; }
-  body:has(#tract) > p:not(.tag):not(.note) { order: 3; }
+  body:has(#tract) > p:not(.note) { order: 3; }
   body:has(#tract) > nav.lessons { order: 4; }
 }
