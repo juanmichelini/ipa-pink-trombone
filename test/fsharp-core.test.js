@@ -6,13 +6,14 @@ import { VOWELS } from '../lib/vowels.js';
 // The F# core is compiled to `core/` by Fable (see `fsharp/README.md`). On a fresh checkout the
 // folder may not exist yet, so these tests skip with a reason. The `fsharp` workflow sets
 // `REQUIRE_CORE`, and then a missing build is a failure instead of a skip.
-// Fable names the output after the F# file; the extension (`.js` or `.fs.js`) depends on its version.
-const dir = new URL('../core/', import.meta.url);
+// Fable mirrors the project layout, so lesson 1 compiles to `core/src/01-TongueSpace.js` (or
+// `.fs.js`, depending on the Fable version).
+const dir = new URL('../core/src/', import.meta.url);
 const listing = existsSync(dir) ? readdirSync(dir) : [];
 const name = listing.find((f) => /^01-TongueSpace(\.fs)?\.js$/.test(f));
 const built = Boolean(name);
 if (!built && process.env.REQUIRE_CORE) {
-  throw new Error(`Error: no compiled 01-TongueSpace in core/ (found: ${listing.join(', ') || 'no core/ folder'})`);
+  throw new Error(`Error: no compiled 01-TongueSpace in core/src/ (found: ${listing.join(', ') || 'no core/src folder'})`);
 }
 const core = built ? await import(new URL(name, dir).href) : null;
 const skip = built ? false : 'core/ is not built: see fsharp/README.md';
