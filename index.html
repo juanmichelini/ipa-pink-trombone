@@ -31,8 +31,8 @@
       el.innerHTML =
         `<span class="pill ${live ? 'live' : ''}">${t(live ? 'home.live' : 'home.planned')}</span>` +
         `<span class="n">${t('home.demo', { n: d.n })}</span><h3></h3><p></p>`;
-      el.querySelector('h3').textContent = t(`demo.${d.n}.title`);
-      el.querySelector('p').textContent = t(`demo.${d.n}.blurb`);
+      el.querySelector('h3').textContent = t(`demo.${d.n}.title`, {}, d.title);
+      el.querySelector('p').textContent = t(`demo.${d.n}.blurb`, {}, d.blurb);
       li.append(el);
       list.append(li);
     }
