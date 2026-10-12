@@ -3,3 +3,5 @@ out/
 *.wav
 .DS_Store
 .vercel
+bin/
+obj/

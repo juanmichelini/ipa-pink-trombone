@@ -86,6 +86,15 @@ Known approximations: lateral consonants are midline-narrowed (a tube has no sid
 not modelled; palatalisation, emphatics, dental consonants and breathy voice are approximated by the nearest sound;
 rhythm classes are a simplification; accents are sketches of tendencies.
 
+## The F# core (in progress)
+
+A pure F# version of the data-to-data layer, taught as lessons: `Tongue` and `Formants` with `toSound` and
+`fromSound` (lesson 1), then consonants, scores, the planner and so on. It is compiled to JavaScript by Fable
+and committed to `core/`, so the site is still static. Purity is a property of each function's interface: the
+waveguide engine will keep local mutable loops inside a pure signature, because a fully immutable per-sample
+step was measured at roughly 11 times slower than a mutable one and cannot run in real time. The JavaScript
+library stays the source the demos use until a lesson replaces a piece of it.
+
 ## Out of scope for now
 
 - Real-time microphone analysis, speech recognition, learning mappings from audio.

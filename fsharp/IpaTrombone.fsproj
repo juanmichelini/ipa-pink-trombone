@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The pure core. Only FSharp.Core, so Fable can compile all of it to JavaScript. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- FS0025: a match that forgets a case is a build error, not a warning. -->
+    <WarningsAsErrors>FS0025</WarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Compile order is lesson order: each file may use only the files above it. -->
+  <ItemGroup>
+    <Compile Include="src/01-TongueSpace.fs" />
+  </ItemGroup>
+
+</Project>

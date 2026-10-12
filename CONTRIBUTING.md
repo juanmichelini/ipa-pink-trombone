@@ -21,6 +21,12 @@ Each source file is a document first.
 
 Preview any file at `/literate/?src=path/to/file.js` while the static server runs.
 
+## The F# core
+
+Lessons live in `fsharp/src/` and follow the same literate convention (`//` prose in column 0). Do not edit
+`core/` by hand: it is the Fable output, and CI pushes a refreshed copy to your pull request branch when the
+F# changes. Pull before you push again. `main` is never written by CI. Details are in `fsharp/README.md`.
+
 ## Shared library first
 
 If two demos need it, it goes in `lib/`. A demo folder should contain only the page, its `main.js` and whatever is
