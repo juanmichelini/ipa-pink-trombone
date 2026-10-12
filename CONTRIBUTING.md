@@ -40,3 +40,5 @@ every IPA symbol in it can actually be sounded.
 ## Translations
 
 Every sentence on a page lives in `data/i18n/<code>.json`; `en.json` is the source. To change a sentence, edit its id in `en.json` and in every other catalogue. To add a string, put `data-i18n="some.id"` on the element (or `data-i18n-html` for markup, `data-i18n-attr="title:some.id"` for attributes), or call `t('some.id', { name })` in a script, and add the id to `en.json`. To add a language, copy `en.json`, translate it, and add it to `LOCALES` in `lib/i18n.js`. The tests check that every catalogue has every id, with the same `{placeholders}` and tags, and that every id used in a page or script exists.
+
+Scripts that show text the page cannot do without (the lesson buttons, the landing cards) pass the English text as the third argument of `t`, as in `t('demo.3.title', {}, d.title)`, so a visitor never sees a raw id even if a catalogue fails to load.
