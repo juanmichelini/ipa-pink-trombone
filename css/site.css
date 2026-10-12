@@ -33,7 +33,7 @@ h1, h2, h3, h4 { line-height: 1.2; font-weight: 600; }
 h1 { font-size: 2.1rem; margin: 1.5rem 0 .5rem; }
 code { font-family: var(--mono); font-size: .92em; background: var(--accent-soft); padding: .05em .3em; border-radius: 4px; }
 .ipa { font-family: var(--ipa); }
-nav.top { display: flex; gap: 1rem; align-items: baseline; font: .95rem var(--serif); color: var(--muted); }
+nav.top { display: flex; flex-wrap: wrap; gap: .4rem 1rem; align-items: baseline; font: .95rem var(--serif); color: var(--muted); }
 nav.top a { text-decoration: none; }
 nav.top strong { color: var(--ink); }
 .tag { color: var(--muted); font-style: italic; margin-top: 0; }
@@ -118,3 +118,19 @@ a.lesson.all { color: var(--muted); border: none; background: none; }
 /* Right-to-left languages (Arabic): text and layout mirror, but drawings and IPA keep their own
    direction, because a vowel chart or a phonetic string reads the same in every language. */
 canvas, svg, .ipa-table, .vowel-buttons, textarea.ipa, #ipa { direction: ltr; }
+
+/* On a phone the picture comes first. A demo page is written in reading order (title, explanation,
+   controls, drawing), which on a narrow screen buries the drawing under a screenful of text.
+   There the page becomes a column and is reordered: title, the drawing, then the controls and
+   charts, then the explanation, then the lesson buttons. The first thing a visitor sees is a mouth
+   that moves, and the reading is there for whoever scrolls. */
+@media (max-width: 38rem) {
+  body:has(#tract) { display: flex; flex-direction: column; }
+  body:has(#tract) > * { order: 2; }
+  body:has(#tract) .demo-grid { display: contents; }
+  body:has(#tract) .demo-grid > * { order: 2; }
+  body:has(#tract) > nav.top, body:has(#tract) > h1, body:has(#tract) > p.tag { order: 0; }
+  body:has(#tract) section:has(> #tract) { order: 1; margin-top: .5rem; }
+  body:has(#tract) > p:not(.tag):not(.note) { order: 3; }
+  body:has(#tract) > nav.lessons { order: 4; }
+}
