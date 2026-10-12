@@ -133,3 +133,7 @@ canvas, svg, .ipa-table, .vowel-buttons, textarea.ipa, #ipa { direction: ltr; }
   body:has(#tract) > p:not(.note) { order: 3; }
   body:has(#tract) > nav.lessons { order: 4; }
 }
+
+/* The language menu sits at the very bottom of every page. */
+footer.lang { margin: 2.5rem 0 0; text-align: center; font: .9rem var(--serif); color: var(--muted); }
+@media (max-width: 38rem) { body:has(#tract) > footer.lang { order: 5; } }
