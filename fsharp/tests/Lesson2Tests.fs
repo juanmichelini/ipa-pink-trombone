@@ -277,6 +277,11 @@ let gestureTests =
         }
     ]
 
+// The answer is right if it is the consonant itself or one with exactly the same held shape.
+let private isSelfOrSynonym (c: Consonant) (found: Consonant) : bool =
+    found.Symbol = c.Symbol
+    || synonyms |> List.exists (fun (a, b) -> (a.Symbol = c.Symbol && b.Symbol = found.Symbol) || (b.Symbol = c.Symbol && a.Symbol = found.Symbol))
+
 [<Tests>]
 let identifyTests =
     testList "Lesson 2, part 2: from the mouth back to the consonant" [
@@ -286,11 +291,20 @@ let identifyTests =
             Expect.isFalse (held |> List.exists (fun (c, _) -> c.Manner = Tap)) "no tap among them"
         }
 
-        test "every held consonant is identified as itself, exactly" {
+        test "every held consonant is identified as itself or as a symbol with exactly its shape" {
             for (c, frame) in held do
                 let (found, d) = identify frame
-                Expect.equal found.Symbol c.Symbol (sprintf "/%s/ is itself" c.Symbol)
                 Expect.equal d 0.0 (sprintf "/%s/ at distance zero" c.Symbol)
+                Expect.isTrue (isSelfOrSynonym c found) (sprintf "/%s/ read back as /%s/" c.Symbol found.Symbol)
+        }
+
+        test "the symbols that are the same shape are stops and their affricates, which differ only in time" {
+            let names = synonyms |> List.map (fun (a, b) -> Set.ofList [ a.Symbol; b.Symbol ]) |> Set.ofList
+            let expected =
+                [ ("t", "t͡s"); ("d", "d͡z"); ("ʈ", "ʈ͡ʂ"); ("ɖ", "ɖ͡ʐ") ]
+                |> List.map (fun (a, b) -> Set.ofList [ a; b ])
+                |> Set.ofList
+            Expect.equal names expected "four pairs, each differing only in the release"
         }
 
         test "the shape of the mouth does not depend on the vowel around it" {
@@ -298,13 +312,13 @@ let identifyTests =
             let aroundI = { defaultOptions with Carrier = Some (carrierOf 27.5 2.05 1.5) }
             for (c, _) in held do
                 let frame = (gestureWith aroundI c).Steady.Value
-                Expect.equal (fst (identify frame)).Symbol c.Symbol (sprintf "/%s/ around an i" c.Symbol)
+                let found = fst (identify frame)
+                Expect.isTrue (isSelfOrSynonym c found) (sprintf "/%s/ around an i" c.Symbol)
         }
 
-        test "the closest two categories are ɹ and ɻ, half an index unit apart" {
-            let (a, b, d) = closestPair
-            Expect.equal (Set.ofList [ a.Symbol; b.Symbol ]) (Set.ofList [ "ɹ"; "ɻ" ]) "the closest pair"
-            Expect.isTrue (close d 0.05) "0.5 index units over a scale of 10"
+        test "the two closest different shapes are about one index unit apart" {
+            let (_, _, d) = closestPair
+            Expect.isTrue (d > 0.09 && d < 0.12) "1 index unit over a scale of 10, plus a little hiss pitch"
             Expect.equal margin d "margin is that distance"
         }
 
@@ -318,7 +332,7 @@ let identifyTests =
                           { frame with NoiseHz = frame.NoiseHz + sign * wobble * 5000.0 }
                           { frame with Velum = frame.Velum + sign * wobble * 0.4 } ]
                     for f in shaken do
-                        Expect.equal (fst (identify f)).Symbol c.Symbol (sprintf "/%s/ survives a wobble" c.Symbol)
+                        Expect.isTrue (isSelfOrSynonym c (fst (identify f))) (sprintf "/%s/ survives a wobble" c.Symbol)
         }
 
         test "something that is no consonant at all is still given a nearest answer, far away" {

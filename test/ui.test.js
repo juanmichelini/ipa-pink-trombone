@@ -68,7 +68,7 @@ test('shapeOf copies, so later shapes do not change earlier ones', () => {
   assert.equal(a.n, 44);
 });
 
-import { cordsPose, lipPose, velumFlap, tongueBody } from '../lib/ui/tractview.js';
+import { cordsPose, lipPose, velumFlap, tongueBody, TOOTH_FROM_END } from '../lib/ui/tractview.js';
 import { consonantGesture, consonantBySymbol } from '../lib/consonants.js';
 import { normalizeScore, frameAt } from '../lib/score.js';
 
@@ -123,4 +123,18 @@ test('for a tongue-tip closure the tongue body reaches the ridge and the jaw sta
   assert.ok(g.tongue.to >= 40, 'at least as far as the ridge (section 39)');
   assert.ok(body.top.some((p) => Math.hypot(p.x - g.outer[40].x, p.y - g.outer[40].y) < 1), 'and its top touches the palate there');
   assert.deepEqual(g.jaw.slice(g.jawFrom).map((p) => [p.x, p.y]), rest.jaw.slice(rest.jawFrom).map((p) => [p.x, p.y]), 'the jaw line did not move');
+});
+
+test('the tongue can never pass the teeth, for any frame the continuous space can make', () => {
+  let seed = 3;
+  const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  for (let n = 0; n < 400; n++) {
+    const frame = { tongueIndex: 12 + random() * 18, tongueDiameter: 2 + random() * 1.6, lips: random() * 3.4, c0i: 13 + random() * 31, c0d: random() * 3, c0n: random(), c1i: 13 + random() * 31, c1d: random() * 3, c1n: random() };
+    const g = tractGeometry(shapeOf(frame));
+    const body = tongueBody(g);
+    const last = g.inner.length - 1, tooth = g.outer[last - TOOTH_FROM_END];
+    // The path runs left to right along the mouth: the tooth's back face is 7 pixels behind its centre.
+    const farthest = Math.max(...body.top.concat(body.cap, body.bottom).map((p) => p.x));
+    assert.ok(farthest < tooth.x - 7, `frame ${n}: tongue reaches x=${farthest.toFixed(1)}, tooth back face at ${tooth.x - 7}`);
+  }
 });
