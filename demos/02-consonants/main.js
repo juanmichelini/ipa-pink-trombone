@@ -28,7 +28,7 @@ let synth = null;
 let playing = null;
 let lastScore = null;
 const SINGLE_PRESS_STRETCH = 5;
-const state = { f0: 130, carrier: 'a', aspirated: false };
+const state = { f0: 130, carrier: 'none', aspirated: false };
 const PITCH = [70, 400];
 
 // ## Choosing the carrier
