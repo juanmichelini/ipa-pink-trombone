@@ -4,42 +4,42 @@ on:
     branches: [main]
   pull_request:
 
-# The bot commit that refreshes core/ needs to write to the pull request branch.
-permissions:
-  contents: write
-
 jobs:
-  core:
+  # The pure F# core, tested as F# (Expecto + FsCheck).
+  fsharp-tests:
     runs-on: ubuntu-latest
     steps:
-      # Check out the branch itself, not the merge commit, so a push goes back to the branch.
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref || github.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+      - run: dotnet run --project fsharp/tests --configuration Release
+
+  # core/ is not committed: Vercel compiles it on every deploy with scripts/vercel-install.sh and
+  # scripts/vercel-build.sh. This job runs those same two scripts in the same operating system
+  # (Amazon Linux 2023, as root, like Vercel's build image), then tests the JavaScript they produce.
+  # If this job is green, the deploy's build step is very likely green too.
+  vercel-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET and Fable, then compile (Amazon Linux 2023)
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work amazonlinux:2023 sh -c '
+            set -eu
+            dnf install -y tar gzip findutils >/dev/null
+            sh scripts/vercel-install.sh
+            sh scripts/vercel-build.sh
+          '
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: F# tests
-        run: dotnet run --project fsharp/tests --configuration Release
-      - name: Install Fable
-        run: |
-          dotnet tool install --global fable --version "4.*"
-          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
-      - name: Compile F# to JavaScript
-        run: |
-          fable --version
-          fable fsharp/IpaTrombone.fsproj --outDir core
       # The failure lines are also written as an annotation, so they show on the pull request
       # without opening the log.
-      - name: JavaScript tests
+      - name: JavaScript tests against the compiled core
         env:
           REQUIRE_CORE: "1"
         run: |
-          ls -R core | head -40
           if ! npm test > test-output.txt 2>&1; then
             summary=$(grep -E "^not ok|^# (pass|fail|skipped)|Error|expected|actual|core/" test-output.txt | head -40 | sed ':a;N;$!ba;s/\n/%0A/g')
             echo "::error title=npm test failed::${summary}"
@@ -47,22 +47,3 @@ jobs:
             exit 1
           fi
           grep -E "^# (pass|fail|skipped)" test-output.txt
-      # core/ is committed so the site stays static. Pull requests from this repository get the
-      # regenerated files pushed to their branch. Never main: main only checks.
-      - name: Push regenerated core/ to the pull request branch
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        run: |
-          git add -f -A core
-          if git diff --cached --quiet; then
-            echo "core/ is already up to date"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Regenerate core/ from the F# source"
-          git push
-      - name: Check core/ matches the F# source
-        if: github.event_name == 'push'
-        run: |
-          git add -f -N core
-          git diff --exit-code -- core

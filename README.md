@@ -61,8 +61,8 @@ for example `/literate/?src=lib/literate.js`. See [`CONTRIBUTING.md`](CONTRIBUTI
 The ideas are also being rebuilt as a small **pure F# core**, one lesson at a time: lesson 1 is a `Tongue`
 type, a function from a tongue to its sound and one back again; lesson 2 will add consonants, and so on. The
 lessons are in [`fsharp/`](fsharp/) and read like the JavaScript source, for example
-`/literate/?src=fsharp/src/01-TongueSpace.fs`. [Fable](https://fable.io) compiles them to the committed
-`core/` folder, so the site stays static. See [`fsharp/README.md`](fsharp/README.md).
+`/literate/?src=fsharp/src/01-TongueSpace.fs`. [Fable](https://fable.io) compiles them to JavaScript when the site is deployed (nothing to build to just read
+them or to run the JavaScript demos). See [`fsharp/README.md`](fsharp/README.md).
 
 ## How work happens
 

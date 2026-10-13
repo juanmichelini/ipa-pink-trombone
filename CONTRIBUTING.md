@@ -23,9 +23,9 @@ Preview any file at `/literate/?src=path/to/file.js` while the static server run
 
 ## The F# core
 
-Lessons live in `fsharp/src/` and follow the same literate convention (`//` prose in column 0). Do not edit
-`core/` by hand: it is the Fable output, and CI pushes a refreshed copy to your pull request branch when the
-F# changes. Pull before you push again. `main` is never written by CI. Details are in `fsharp/README.md`.
+Lessons live in `fsharp/src/` and follow the same literate convention (`//` prose in column 0). The
+compiled JavaScript in `core/` is not committed: Vercel builds it from the F# on every deploy, and CI
+rehearses that build. Details are in `fsharp/README.md`.
 
 ## Shared library first
 

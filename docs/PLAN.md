@@ -6,7 +6,7 @@ single vowel chart to accents. All experiments coexist in one repo and share one
 ## Principles
 
 - **Issues and PRs only.** Each experiment is an issue; each issue is one PR.
-- **Static, zero build.** Plain ES modules served as-is. Vercel serves the repo root.
+- **Static output.** Plain ES modules served as-is. Vercel serves the repo root. The only build step compiles the F# core (see below).
 - **Literate, pure script.** Source is prose first (see `CONTRIBUTING.md`). No framework, no bundler, no dependencies.
 - **One library.** `lib/` holds everything reusable. Demos are thin.
 - **Testable.** Phonetic claims are checked numerically from the tract's impulse response.
@@ -90,7 +90,7 @@ rhythm classes are a simplification; accents are sketches of tendencies.
 
 A pure F# version of the data-to-data layer, taught as lessons: `Tongue` and `Formants` with `toSound` and
 `fromSound` (lesson 1), then consonants, scores, the planner and so on. It is compiled to JavaScript by Fable
-and committed to `core/`, so the site is still static. Purity is a property of each function's interface: the
+on every Vercel deploy into an uncommitted `core/`, so the site is still served as static files but the deploy now has a build step (it installs .NET). Purity is a property of each function's interface: the
 waveguide engine will keep local mutable loops inside a pure signature, because a fully immutable per-sample
 step was measured at roughly 11 times slower than a mutable one and cannot run in real time. The JavaScript
 library stays the source the demos use until a lesson replaces a piece of it.

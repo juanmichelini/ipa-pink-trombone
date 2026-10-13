@@ -20,16 +20,18 @@ inside.)
 
 ## How it gets to the browser
 
-[Fable](https://fable.io) compiles the F# to JavaScript in `core/`, and that output **is committed**, so
-the site stays static with no build step on Vercel. You do not need .NET to run or deploy the site.
+[Fable](https://fable.io) compiles the F# to JavaScript in `core/`. That folder is **not committed**
+(it is in `.gitignore`): Vercel builds it on every deploy.
 
-CI (`.github/workflows/fsharp.yml`) does the build:
+- `vercel.json` runs `scripts/vercel-install.sh` (installs the .NET SDK with `dnf` on Vercel's Amazon
+  Linux 2023 build image and restores Fable, whose version is pinned in `.config/dotnet-tools.json`)
+  and then `scripts/vercel-build.sh` (runs Fable).
+- CI (`.github/workflows/fsharp.yml`) runs the F# tests, and also runs those same two scripts inside an
+  `amazonlinux:2023` container before testing the JavaScript they produce. A green CI means the
+  deploy's build step has been rehearsed.
 
-- on a pull request from this repository it runs the F# tests, runs Fable, runs `npm test`, and **pushes
-  the regenerated `core/` to the pull request branch** if it changed
-- on `main` it fails if the committed `core/` does not match the F# source
-
-Do not edit `core/` by hand.
+You do not need .NET to work on the JavaScript side: `npm test` skips the compiled-core tests when
+`core/` is missing.
 
 ## Building locally
 
@@ -37,10 +39,10 @@ Needs the .NET 8 SDK.
 
 ```sh
 dotnet run --project fsharp/tests                 # F# tests (Expecto + FsCheck)
-dotnet tool install --global fable --version "4.*"
-fable fsharp/IpaTrombone.fsproj --outDir core     # regenerate core/
-npm test
+dotnet tool restore                               # installs the pinned Fable
+dotnet fable fsharp/IpaTrombone.fsproj --outDir core
+npm test                                          # now also tests the compiled core
 ```
 
-Fable writes `core/fable_modules/.gitignore`, which hides the library files it copies. They are needed
-by the site, so add them with `git add -f core`.
+`core/` is ignored by git, so there is nothing to commit afterwards. To see a page that uses it, serve the
+folder as usual (`python3 -m http.server 8000`) after building.
