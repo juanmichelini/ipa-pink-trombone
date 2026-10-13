@@ -9,6 +9,9 @@ written like the JavaScript source: prose in `//` comments in column 0, code aft
 | 1 | `src/01-TongueSpace.fs` | `Tongue`, `Formants`, `toSound`, `fromSound`, `render` |
 | 2 | `src/02a-Score.fs` | `Frame`, `Timeline`, `Score`: movement written down as pure values |
 | 2 | `src/02b-Consonants.fs` | `Place`, `Manner`, `Consonant`, `gesture`, and `identify` (mouth shape back to consonant) |
+| 3 | `src/03a-VowelShape.fs` | the calibrated vowel chart becomes a `Shape`: tongue, jaw and lips |
+| 3 | `src/03b-Ipa.fs` | `tokenize` and `format`: IPA text to segments and back |
+| 3 | `src/03c-Planner.fs` | `plan`: coarticulation, durations, stress, tones, undershoot and declination, as a fold |
 
 Read a lesson in the browser at `/literate/?src=fsharp/src/01-TongueSpace.fs` (and likewise for the others).
 

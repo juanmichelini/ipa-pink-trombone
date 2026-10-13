@@ -12,6 +12,9 @@
     <Compile Include="src/01-TongueSpace.fs" />
     <Compile Include="src/02a-Score.fs" />
     <Compile Include="src/02b-Consonants.fs" />
+    <Compile Include="src/03a-VowelShape.fs" />
+    <Compile Include="src/03b-Ipa.fs" />
+    <Compile Include="src/03c-Planner.fs" />
   </ItemGroup>
 
 </Project>
