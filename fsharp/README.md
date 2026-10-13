@@ -18,6 +18,9 @@ written like the JavaScript source: prose in `//` comments in column 0, code aft
 | 6 | `src/06-Tempo.fs` | two ways to go fast (`naive`, `speechLike`) and the measurements that tell them apart |
 | 7 | `src/07-Rhythm.fs` | syllables, stress-timed and syllable-timed durations, `rhythmPlan` and nPVI |
 | 8 | `src/08-Accents.fs` | rewrite rules: `parseAccent` (errors as values), `applyAccent` and its trace |
+| 9 | `src/09a-Glottis.fs` | the source: seeded random numbers, a noise filter, the LF glottal pulse |
+| 9 | `src/09b-Tract.fs` | the waveguide tract with its nose, turbulence and release pops; `shapeOf` |
+| 9 | `src/09c-Render.fs` | `Voice` and `render : RenderOptions -> Score -> float32[]`, pure from outside |
 
 Read a lesson in the browser at `/literate/?src=fsharp/src/01-TongueSpace.fs` (and likewise for the others).
 
@@ -28,8 +31,7 @@ The demos still run on the JavaScript library. A test per lesson compares the co
 Every function is deterministic: no state, randomness or I/O. `render` uses local `mutable` loop
 variables for speed, but nothing mutable escapes, so from outside it is a pure function. (A fully
 immutable per-sample waveguide was measured at about 11 times slower than a mutable one and cannot
-keep up with real time, so the future engine lesson keeps the same pure signature with a mutable
-inside.)
+keep up with real time, so lesson 9, the engine, keeps a pure signature with mutable arrays inside.)
 
 ## How it gets to the browser
 
