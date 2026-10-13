@@ -28,8 +28,10 @@ function element(e) {
     default: return { kind: 'sym', symbol: e.fields[0] };
   }
 }
-// The JavaScript elements also remember the token they were read from; only the meaning is compared.
+// The JavaScript elements also remember the token they were read from (and a `#` inside a set
+// carries its name); only the meaning is compared.
 function plainElement(e) {
+  if (e.kind === 'boundary') return { kind: 'boundary' };
   if (e.kind === 'set') return { kind: 'set', items: e.items.map(plainElement) };
   if (e.kind === 'sym') return { kind: 'sym', symbol: e.symbol };
   return e;
