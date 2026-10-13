@@ -72,6 +72,8 @@ test('shapes agree for the frames of a real phrase', { skip }, () => {
     assert.equal(compiled.NoseStart, expected.noseStart);
     near(compiled.Velum, expected.velum, 'velum');
     expected.diameter.forEach((d, i) => near(compiled.Diameter[i], d, `diameter ${i} at ${frame.t}`));
+    expected.tongue.forEach((d, i) => near(compiled.Tongue[i], d, `tongue ${i} at ${frame.t}`));
+    expected.floor.forEach((d, i) => near(compiled.Floor[i], d, `floor ${i} at ${frame.t}`));
     expected.noseDiameter.forEach((d, i) => near(compiled.NoseDiameter[i], d, `nose ${i}`));
     const pinches = Array.from(compiled.Pinches);
     assert.equal(pinches.length, expected.constrictions.length);
@@ -95,6 +97,8 @@ test('shapes agree for random frames, other lengths and other sample rates', { s
     const compiled = tractFs.shapeOf(rate, cm, toFs(frame));
     const expected = shapeOf(frame, { sampleRate: rate, tractLength: cm });
     expected.diameter.forEach((d, i) => near(compiled.Diameter[i], d, `random frame ${n} diameter ${i}`));
+    expected.tongue.forEach((d, i) => near(compiled.Tongue[i], d, `random frame ${n} tongue ${i}`));
+    expected.floor.forEach((d, i) => near(compiled.Floor[i], d, `random frame ${n} floor ${i}`));
     expected.noseDiameter.forEach((d, i) => near(compiled.NoseDiameter[i], d, `random frame ${n} nose ${i}`));
   }
 });
