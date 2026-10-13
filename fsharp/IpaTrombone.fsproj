@@ -20,6 +20,7 @@
     <Compile Include="src/05-Voices.fs" />
     <Compile Include="src/06-Tempo.fs" />
     <Compile Include="src/07-Rhythm.fs" />
+    <Compile Include="src/08-Accents.fs" />
   </ItemGroup>
 
 </Project>
