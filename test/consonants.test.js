@@ -123,3 +123,11 @@ test('a tap pressed on its own is a flick, not a whole vowel around it', () => {
   assert.ok(length(alone) < 0.15, `alone lasts ${length(alone).toFixed(3)} s`);
   assert.ok(length(between) > length(alone) + 0.1);
 });
+
+test('in a voiced fricative the hiss is louder than the voice, as in speech', () => {
+  for (const symbol of ['z', 'ʒ', 'ð', 'ç', 'ʝ']) {
+    const { g, samples } = play(symbol, { carrier: null });
+    const seg = samples.slice(Math.floor((g.hold.start + 0.05) * RATE), Math.floor(g.hold.end * RATE));
+    assert.ok(bandEnergy(seg, RATE, 2000, 10000) > bandEnergy(seg, RATE, 80, 500), `${symbol}: hiss over voice`);
+  }
+});

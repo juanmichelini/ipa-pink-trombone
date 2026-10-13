@@ -249,9 +249,10 @@ let degreeLateral = 0.32
 // A consonant of a place and a degree, as the constriction the engine takes. This is the whole of the
 // mapping from the space to a frame: nothing here depends on which symbol it is.
 /// Voicing is one dial for every consonant. The only thing that depends on the others is that a gap
-/// narrow enough to hiss shares the airstream with the voice, so the voice is turned down to let the
-/// hiss through: the most voice a consonant with `hiss` can have. Nothing here depends on the symbol.
-let voiceGain (hiss: float) : float = if hiss > 0.0 then 0.5 else 1.0
+/// narrow enough to hiss shares the airstream with the voice, so the voice sits well under the hiss,
+/// like the quiet murmur under a real `z`: the most voice a consonant with `hiss` can have. Nothing
+/// here depends on the symbol.
+let voiceGain (hiss: float) : float = if hiss > 0.0 then 0.12 else 1.0
 
 let private constriction (index: float) (gap: float) : Constriction =
     { Index = index; Diameter = gap; Noise = (if gap < 0.6 then hissLevel index else 0.0) }
