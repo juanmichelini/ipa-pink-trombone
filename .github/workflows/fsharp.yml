@@ -55,7 +55,7 @@ jobs:
           REQUIRE_CORE: "1"
         run: |
           if ! npm test > test-output.txt 2>&1; then
-            summary=$(grep -E "^not ok|^# (pass|fail|skipped)|Error|expected|actual|core/" test-output.txt | head -40 | sed ':a;N;$!ba;s/\n/%0A/g')
+            summary=$(grep -E -A14 "^not ok" test-output.txt | grep -v "^# Subtest" | cut -c1-300 | head -70 | sed ':a;N;$!ba;s/\n/%0A/g')
             echo "::error title=npm test failed::${summary}"
             tail -60 test-output.txt
             exit 1
