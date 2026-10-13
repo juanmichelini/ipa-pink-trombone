@@ -17,6 +17,7 @@
     <Compile Include="src/03c-Planner.fs" />
     <Compile Include="src/04a-G2p.fs" />
     <Compile Include="src/04b-Languages.fs" />
+    <Compile Include="src/05-Voices.fs" />
   </ItemGroup>
 
 </Project>

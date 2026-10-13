@@ -14,6 +14,7 @@ written like the JavaScript source: prose in `//` comments in column 0, code aft
 | 3 | `src/03c-Planner.fs` | `plan`: coarticulation, durations, stress, tones, undershoot and declination, as a fold |
 | 4 | `src/04a-G2p.fs` | Spanish and Indonesian spelling to IPA: phones, syllables and stress as a pipeline of passes |
 | 4 | `src/04b-Languages.fs` | the ten languages, dictionary parsing, lookup and text to IPA |
+| 5 | `src/05-Voices.fs` | `Voice` presets, `speak`, `whisperScore`, and formants scaled by tract length |
 
 Read a lesson in the browser at `/literate/?src=fsharp/src/01-TongueSpace.fs` (and likewise for the others).
 
