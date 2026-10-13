@@ -7,9 +7,10 @@ open IpaTrombone.G2p
 open IpaTrombone.Languages
 
 let private wordsFrom (alphabet: string) : Arbitrary<string> =
-    Gen.choose (1, 9)
-    |> Gen.bind (fun length -> Gen.arrayOfLength length (Gen.elements (alphabet.ToCharArray())))
-    |> Gen.map (fun chars -> String(chars))
+    Gen.elements (alphabet.ToCharArray())
+    |> Gen.nonEmptyListOf
+    |> Gen.resize 9
+    |> Gen.map (fun (chars: char list) -> String(Array.ofList chars))
     |> Arb.fromGen
 
 let private spanishWords = wordsFrom "abcdefghijklmnñopqrstuvwxyzáéíóúü"
