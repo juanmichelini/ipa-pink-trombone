@@ -1,4 +1,4 @@
-module Tests
+module Lesson1Tests
 
 open System
 open Expecto
@@ -111,6 +111,3 @@ let lesson1 =
             Expect.isTrue (symbolPower "a" 850.0 > 10.0 * symbolPower "i" 850.0) "F1 of a is high"
         }
     ]
-
-[<EntryPoint>]
-let main argv = runTestsInAssemblyWithCLIArgs [] argv

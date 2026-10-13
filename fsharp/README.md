@@ -7,8 +7,12 @@ written like the JavaScript source: prose in `//` comments in column 0, code aft
 | Lesson | File | Adds |
 |-------:|------|------|
 | 1 | `src/01-TongueSpace.fs` | `Tongue`, `Formants`, `toSound`, `fromSound`, `render` |
+| 2 | `src/02a-Score.fs` | `Frame`, `Timeline`, `Score`: movement written down as pure values |
+| 2 | `src/02b-Consonants.fs` | `Place`, `Manner`, `Consonant`, `gesture`, and `identify` (mouth shape back to consonant) |
 
-Read a lesson in the browser at `/literate/?src=fsharp/src/01-TongueSpace.fs`.
+Read a lesson in the browser at `/literate/?src=fsharp/src/01-TongueSpace.fs` (and likewise for the others).
+
+The demos still run on the JavaScript library. A test per lesson compares the compiled F# with the JavaScript, number for number (`test/fsharp-*.test.js`), so the two cannot drift apart unnoticed.
 
 ## Why pure, and what that means here
 

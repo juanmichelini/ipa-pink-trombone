@@ -13,7 +13,16 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - run: dotnet run --project fsharp/tests --configuration Release
+      # Compiler and test failures are also written as an annotation, so they show on the pull request
+      # without opening the log.
+      - name: F# tests
+        run: |
+          set -o pipefail
+          if ! dotnet run --project fsharp/tests --configuration Release 2>&1 | tee fsharp-output.txt; then
+            summary=$(grep -E "error FS|error MSB|error NU|\[FAIL\]|Failed|Expected|Actual|actual|Error" fsharp-output.txt | awk '!seen[$0]++' | head -50 | sed ':a;N;$!ba;s/\n/%0A/g')
+            echo "::error title=F# build or tests failed::${summary}"
+            exit 1
+          fi
 
   # core/ is not committed: Vercel compiles it on every deploy with scripts/vercel-install.sh and
   # scripts/vercel-build.sh. This job runs those same two scripts in the same operating system
@@ -25,12 +34,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install .NET and Fable, then compile (Amazon Linux 2023)
         run: |
-          docker run --rm -v "$PWD:/work" -w /work amazonlinux:2023 sh -c '
+          set -o pipefail
+          if ! docker run --rm -v "$PWD:/work" -w /work amazonlinux:2023 sh -c '
             set -eu
             dnf install -y tar gzip findutils >/dev/null
             sh scripts/vercel-install.sh
             sh scripts/vercel-build.sh
-          '
+          ' 2>&1 | tee build-output.txt; then
+            summary=$(grep -E "error FS|error MSB|error NU|rror" build-output.txt | awk '!seen[$0]++' | head -50 | sed ':a;N;$!ba;s/\n/%0A/g')
+            echo "::error title=Vercel build rehearsal failed::${summary}"
+            exit 1
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 22
