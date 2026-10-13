@@ -39,10 +39,18 @@ const cases = [
   ['at 220 Hz, alone', { f0: 220 }],
 ];
 
+// A carrier is an F# function `Frame -> Frame`. Fable may compile `carrierOf a b c = fun frame -> ...`
+// as one four-argument function or as a three-argument one that returns a function, so handle both.
+function compiledCarrier({ tongueIndex, tongueDiameter, lips }) {
+  return fs.carrierOf.length >= 4
+    ? (frame) => fs.carrierOf(tongueIndex, tongueDiameter, lips, frame)
+    : fs.carrierOf(tongueIndex, tongueDiameter, lips);
+}
+
 function compiledOptions(o) {
   return {
     Pitch: o.f0 ?? 130,
-    Carrier: o.carrier ? fs.carrierOf(o.carrier.tongueIndex, o.carrier.tongueDiameter, o.carrier.lips) : undefined,
+    Carrier: o.carrier ? compiledCarrier(o.carrier) : undefined,
     Aspirated: o.aspirated ?? false,
     HoldFor: o.holdFor,
     TransitionScale: o.transitionScale ?? 1,
