@@ -305,11 +305,16 @@ let private addTurbulence (t: Tract) (noise: float) (position: float) (gap: floa
     let amount = noise * thinness * openness
     let a = amount * (1.0 - delta)
     let b = amount * delta
-    if i >= 0 && i + 2 < t.N then
-        t.R[i + 1] <- t.R[i + 1] + a / 2.0
-        t.L[i + 1] <- t.L[i + 1] + a / 2.0
-        t.R[i + 2] <- t.R[i + 2] + b / 2.0
-        t.L[i + 2] <- t.L[i + 2] + b / 2.0
+    // Past the last section (the lips) there is nothing, so a gap at the very lips puts all of its
+    // noise into the last one: dropping it made `f` and `φ` silent.
+    if i >= 0 then
+        let last = t.N - 1
+        let j0 = min (i + 1) last
+        let j1 = min (i + 2) last
+        t.R[j0] <- t.R[j0] + a / 2.0
+        t.L[j0] <- t.L[j0] + a / 2.0
+        t.R[j1] <- t.R[j1] + b / 2.0
+        t.L[j1] <- t.L[j1] + b / 2.0
 
 // ## One step
 //

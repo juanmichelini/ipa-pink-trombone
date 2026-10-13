@@ -138,3 +138,22 @@ test('the tongue can never pass the teeth, for any frame the continuous space ca
     assert.ok(farthest < tooth.x - 7, `frame ${n}: tongue reaches x=${farthest.toFixed(1)}, tooth back face at ${tooth.x - 7}`);
   }
 });
+
+test('f and ɱ draw the lower lip against the teeth, m draws it against the upper lip', async () => {
+  const { consonantBySymbol, consonantGesture } = await import('../lib/consonants.js');
+  const { frameAt, normalizeScore } = await import('../lib/score.js');
+  const shapeFor = (symbol) => {
+    const g = consonantGesture(consonantBySymbol(symbol), { carrier: null });
+    const mid = (g.hold.start + g.hold.end) / 2;
+    return shapeOf(frameAt(normalizeScore(g.score), mid));
+  };
+  const lowest = (shape) => {
+    const floor = shape.floor, last = shape.n - 1;
+    let at = last;
+    for (let i = last; i >= last - TOOTH_FROM_END; i--) if (floor[i] < floor[at] - 0.05) at = i;
+    return at;
+  };
+  assert.equal(lowest(shapeFor('m')), shapeFor('m').n - 1, 'm closes at the lips');
+  assert.ok(lowest(shapeFor('ɱ')) < shapeFor('ɱ').n - 1, 'ɱ closes behind the lips, at the teeth');
+  assert.ok(lowest(shapeFor('f')) < shapeFor('f').n - 1, 'f closes at the teeth');
+});

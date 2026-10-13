@@ -220,7 +220,7 @@ let gestureTests =
             Expect.isTrue (s.NoiseHz > sh.NoiseHz) "the hiss of s is higher"
             Expect.isTrue (s.C0i > sh.C0i) "and the gap is nearer the lips"
             Expect.equal s.Intensity 0.0 "s is voiceless"
-            Expect.equal (steadyOf "z").Intensity 0.7 "z is voiced, a little quieter"
+            Expect.equal (steadyOf "z").Intensity 0.5 "z is voiced, with the voice turned down so the hiss gets through"
         }
 
         test "nasals close the mouth and open the nose" {

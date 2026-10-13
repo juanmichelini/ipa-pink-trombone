@@ -240,7 +240,7 @@ let hissPitch (index: float) : float =
 
 // How strongly a gap at `index` hisses, 0 to 1.
 let hissLevel (index: float) : float =
-    curve [ (13.5, 0.8); (24.5, 0.8); (29.5, 0.85); (33.0, 1.0); (39.0, 1.0); (40.5, 0.6); (43.5, 0.6) ] index
+    curve [ (13.5, 0.8); (24.5, 0.8); (29.5, 0.85); (33.0, 1.0); (39.0, 1.0); (40.5, 1.2); (42.0, 4.5); (43.5, 4.5) ] index
 
 // The degrees that the symbols use, as named points on the degree dial.
 let degreeFricative = 0.42
@@ -248,6 +248,11 @@ let degreeLateral = 0.32
 
 // A consonant of a place and a degree, as the constriction the engine takes. This is the whole of the
 // mapping from the space to a frame: nothing here depends on which symbol it is.
+/// Voicing is one dial for every consonant. The only thing that depends on the others is that a gap
+/// narrow enough to hiss shares the airstream with the voice, so the voice is turned down to let the
+/// hiss through: the most voice a consonant with `hiss` can have. Nothing here depends on the symbol.
+let voiceGain (hiss: float) : float = if hiss > 0.0 then 0.5 else 1.0
+
 let private constriction (index: float) (gap: float) : Constriction =
     { Index = index; Diameter = gap; Noise = (if gap < 0.6 then hissLevel index else 0.0) }
 
@@ -318,6 +323,8 @@ let private specOf (c: Consonant) : Spec =
 module private Timing =
     let leadCarrier = 0.1 // carrier vowel before the consonant
     let leadNone = 0.03
+    let leadAlone = 0.04 // voice before a tap pressed on its own
+    let afterAlone = 0.04
     let close = 0.05 // articulators moving into position
     let opening = 0.05 // and out again
     let stopHold = 0.075 // closure of a stop
@@ -414,6 +421,8 @@ let kindOf (c: Consonant) : Kind =
 type private Ctx =
     { Opts: Options
       WithVowel: bool
+      /// A tap pressed on its own: it gets a breath of voice either side, not a whole vowel.
+      Alone: bool
       Lead: float
       Base: Frame }
 
@@ -437,11 +446,8 @@ let private continuant (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Tim
         | LateralFricative -> Timing.fricativeHold
         | _ -> Timing.approximantHold
     let holdEnd = closeAt + (Option.defaultValue natural x.Opts.HoldFor)
-    let isFricative = (c.Manner = Fricative || c.Manner = LateralFricative)
-    let voicing =
-        if isFricative then (if c.Voiced then 0.7 else 0.0)
-        elif c.Voiced then 1.0
-        else 0.0
+    let hiss = match spec.C0 with Some k -> k.Noise | None -> 0.0
+    let voicing = if c.Voiced then voiceGain hiss else 0.0
     let target : Change =
         if c.Symbol = "h" || c.Symbol = "ɦ" then
             if c.Voiced then
@@ -460,7 +466,7 @@ let private continuant (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Tim
                       | None -> f)
                   (fun f -> if c.Manner = Nasal then { f with Velum = 0.42 } else f)
                   (fun f -> { f with Intensity = voicing })
-                  (fun f -> if isFricative && c.Voiced then { f with Tenseness = 0.45 } else f)
+                  (fun f -> if hiss > 0.0 && c.Voiced then { f with Tenseness = 0.45 } else f)
                   (fun f -> if c.Symbol = "ʍ" then { f with Lips = 0.6 } else f)
                   (fun f -> if c.Symbol = "w" || c.Symbol = "ɥ" then { f with Lips = 0.55 } else f) ]
     let back : Change =
@@ -596,7 +602,7 @@ let private affricate (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Time
                 Tenseness = (if voiced then 0.5 else 0.6) })
         |> Timeline.at releaseAt id
         |> Timeline.at (releaseAt + 0.006) (fun f ->
-            { f with C0d = k.Diameter; C0n = k.Noise; NoiseHz = spec.Hz; Intensity = (if voiced then 0.7 else 0.0) })
+            { f with C0d = k.Diameter; C0n = k.Noise; NoiseHz = spec.Hz; Intensity = (if voiced then voiceGain k.Noise else 0.0) })
         |> Timeline.at (releaseAt + 0.006 + Timing.affricateFrication) id
         |> Timeline.at released (fun f ->
             { f with C0d = 3.0; C0n = 0.0; Intensity = (if x.WithVowel || voiced then 1.0 else 0.0); Tenseness = 0.6 })
@@ -624,7 +630,7 @@ let private tap (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline =
     |> Timeline.at closed (fun f -> { f with C0d = 0.0; Intensity = 0.8 })
     |> Timeline.at (closed + Timing.tapClosure) id
     |> Timeline.at (closed + Timing.tapClosure + 0.012) (fun f -> { f with C0d = 3.0; Intensity = 1.0 })
-    |> Timeline.at (closed + Timing.tapClosure + 0.012 + Timing.afterCarrier) id
+    |> Timeline.at (closed + Timing.tapClosure + 0.012 + (if x.Alone then Timing.afterAlone else Timing.afterCarrier)) id
 
 // ## The frame to hold
 //
@@ -664,9 +670,10 @@ let gestureWith (options: Options) (c: Consonant) : Gesture =
             Aspiration = 0.0
             NoiseHz = 1000.0 }
         |> carrier
-    let lead = if withVowel then Timing.leadCarrier else Timing.leadNone
+    let alone = (kind = Kind.Tap) && Option.isNone options.Carrier
+    let lead = if alone then Timing.leadAlone elif withVowel then Timing.leadCarrier else Timing.leadNone
     let spec = specOf c
-    let ctx = { Opts = options; WithVowel = withVowel; Lead = lead; Base = baseFrame }
+    let ctx = { Opts = options; WithVowel = withVowel; Alone = alone; Lead = lead; Base = baseFrame }
     let started =
         Timeline.start baseFrame
         |> Timeline.at lead (fun f ->
