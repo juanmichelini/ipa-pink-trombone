@@ -18,6 +18,7 @@
     <Compile Include="src/04a-G2p.fs" />
     <Compile Include="src/04b-Languages.fs" />
     <Compile Include="src/05-Voices.fs" />
+    <Compile Include="src/06-Tempo.fs" />
   </ItemGroup>
 
 </Project>
