@@ -74,3 +74,12 @@ test('the viewer can weave its own source', async () => {
   assert.equal(title, 'The literate viewer');
   assert.ok(html.includes('<pre class="code">'));
 });
+
+test('F# files are allowed and highlighted as F#', () => {
+  assert.ok(isSafeSource('fsharp/src/01-TongueSpace.fs'));
+  assert.ok(!isSafeSource('fsharp/src/../../x.fs'));
+  // In F# a single quote starts a type variable, not a string.
+  const html = highlight("let f (x: 'a) (y: 'b) = x", 'fsharp');
+  assert.ok(html.includes('<span class="k">let</span>'));
+  assert.ok(!html.includes('<span class="s">'));
+});

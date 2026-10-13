@@ -21,6 +21,12 @@ Each source file is a document first.
 
 Preview any file at `/literate/?src=path/to/file.js` while the static server runs.
 
+## The F# core
+
+Lessons live in `fsharp/src/` and follow the same literate convention (`//` prose in column 0). The
+compiled JavaScript in `core/` is not committed: Vercel builds it from the F# on every deploy, and CI
+rehearses that build. Details are in `fsharp/README.md`.
+
 ## Shared library first
 
 If two demos need it, it goes in `lib/`. A demo folder should contain only the page, its `main.js` and whatever is

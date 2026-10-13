@@ -1,0 +1,49 @@
+name: fsharp
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # The pure F# core, tested as F# (Expecto + FsCheck).
+  fsharp-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet run --project fsharp/tests --configuration Release
+
+  # core/ is not committed: Vercel compiles it on every deploy with scripts/vercel-install.sh and
+  # scripts/vercel-build.sh. This job runs those same two scripts in the same operating system
+  # (Amazon Linux 2023, as root, like Vercel's build image), then tests the JavaScript they produce.
+  # If this job is green, the deploy's build step is very likely green too.
+  vercel-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET and Fable, then compile (Amazon Linux 2023)
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work amazonlinux:2023 sh -c '
+            set -eu
+            dnf install -y tar gzip findutils >/dev/null
+            sh scripts/vercel-install.sh
+            sh scripts/vercel-build.sh
+          '
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The failure lines are also written as an annotation, so they show on the pull request
+      # without opening the log.
+      - name: JavaScript tests against the compiled core
+        env:
+          REQUIRE_CORE: "1"
+        run: |
+          if ! npm test > test-output.txt 2>&1; then
+            summary=$(grep -E "^not ok|^# (pass|fail|skipped)|Error|expected|actual|core/" test-output.txt | head -40 | sed ':a;N;$!ba;s/\n/%0A/g')
+            echo "::error title=npm test failed::${summary}"
+            tail -60 test-output.txt
+            exit 1
+          fi
+          grep -E "^# (pass|fail|skipped)" test-output.txt

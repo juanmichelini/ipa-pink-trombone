@@ -4,18 +4,18 @@ import { readdir, readFile } from 'node:fs/promises';
 import { weave } from '../lib/literate.js';
 
 // The repo promises literate source. This keeps the promise honest: every script under lib/,
-// demos/ and scripts/ opens with a `// # Title` and carries a healthy share of prose.
+// demos/ and scripts/, and every F# lesson under fsharp/src/, opens with a `// # Title` and carries a healthy share of prose.
 async function sources(dir) {
   const out = [];
   for (const entry of await readdir(new URL(`../${dir}/`, import.meta.url), { withFileTypes: true })) {
     if (entry.isDirectory()) out.push(...(await sources(`${dir}/${entry.name}`)));
-    else if (/\.m?js$/.test(entry.name)) out.push(`${dir}/${entry.name}`);
+    else if (/\.(m?js|fs)$/.test(entry.name)) out.push(`${dir}/${entry.name}`);
   }
   return out;
 }
 
 test('every script is a document: titled, with real prose', async () => {
-  const files = [...(await sources('lib')), ...(await sources('demos')), ...(await sources('scripts'))];
+  const files = [...(await sources('lib')), ...(await sources('demos')), ...(await sources('scripts')), ...(await sources('fsharp/src'))];
   assert.ok(files.length >= 10);
   const problems = [];
   for (const file of files) {
