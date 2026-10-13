@@ -38,7 +38,7 @@ const same = (compiled, js, what, eps = 1e-6) => {
 test('random numbers agree', { skip }, () => {
   for (const seed of [0, 1, 2, 42, 12345, 2 ** 31 + 5]) {
     const js = makeRng(seed), fs = glottalFs.makeRng(seed | 0);
-    for (let i = 0; i < 500; i++) near(glottalFs.nextFloat(fs), js(), `seed ${seed} number ${i}`, 0);
+    for (let i = 0; i < 500; i++) assert.equal(glottalFs.nextFloat(fs), js(), `seed ${seed} number ${i}`);
   }
 });
 
