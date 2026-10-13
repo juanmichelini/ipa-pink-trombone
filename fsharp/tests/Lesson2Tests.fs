@@ -194,19 +194,19 @@ let gestureTests =
                 Expect.equal f.Intensity 0.0 (sprintf "/%s/ silent" symbol)
             for symbol in [ "b"; "d"; "ɡ"; "ɢ" ] do
                 let f = steadyOf symbol
-                Expect.equal f.C0d 0.015 (sprintf "/%s/ nearly closed: a leak" symbol)
+                Expect.isTrue (f.C0d > 0.0 && f.C0d < 0.08) (sprintf "/%s/ nearly closed: a leak" symbol)
                 Expect.equal f.Intensity 0.85 (sprintf "/%s/ voiced" symbol)
         }
 
         test "a stop releases through a burst of noise" {
             let keys = (gestureOf "t").Score.Keyframes
-            Expect.isTrue (keys |> List.exists (fun k -> k.Frame.C0d = 0.38 && k.Frame.C0n = 0.2)) "a hissing gap opens at the release"
+            Expect.isTrue (keys |> List.exists (fun k -> k.Frame.C0d = 0.38 && k.Frame.C0n = 0.325)) "a hissing gap opens at the release"
         }
 
         test "aspirated stops wait longer for the voice, by exactly the difference in voice onset time" {
             let plain = (gestureWith withNeutral (find "p")).Score.Duration
             let puff = (gestureWith { withNeutral with Aspirated = true } (find "p")).Score.Duration
-            Expect.isTrue (close (puff - plain) (0.07 - 0.016)) "0.07 s against 0.016 s"
+            Expect.isTrue (close (puff - plain) (0.07 - 0.04)) "0.07 s against 0.04 s"
         }
 
         test "fricatives hiss through a narrow gap; s is higher and further forward than sh" {

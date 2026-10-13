@@ -343,22 +343,14 @@ module private Timing =
     let afterAlone = 0.04
     let close = 0.05 // articulators moving into position
     let opening = 0.05 // and out again
-    let stopHold = 0.075 // closure of a stop
+    let stopHold = 0.12 // closure of a stop
     let fricativeHold = 0.24
     let nasalHold = 0.22
     let approximantHold = 0.16
     let trillHold = 0.3
     let tapClosure = 0.018
     let burst = 0.014
-
-    /// How far a closure for a voiced stop is open: the "not quite sealed" tube that lets a faint voice
-    /// bar out. The recordings put it about 25 dB under the vowel.
-    let leak = 0.015
-
-    /// How hard the pent-up air hisses for an instant at a release. The recordings put it near -30 dB
-    /// under the vowel at every place, sibilant or not, so it is one number and not a curve of the place.
-    let burstNoise = 0.2
-    let votPlain = 0.016 // voice onset time of a plain voiceless stop
+    let votPlain = 0.04 // voice onset time of a plain voiceless stop
     let votAspirated = 0.07
     let affricateFrication = 0.1
     let afterCarrier = 0.16
@@ -550,12 +542,34 @@ let private trill (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline
         |> Timeline.at (holdEnd + (Timing.opening * tr) + tail) id
     (built, { Start = closeAt; End = holdEnd })
 
+// How far a closure is open: the "not quite sealed" tube that lets a faint voice bar out of a voiced
+// stop. The recordings put the voice bar about 28 dB under the vowel at every place, but the same leak is
+// much quieter at the lips (nothing in front of it to resonate) than at the tongue, so the leak is a
+// curve of the place, widest at the lips. A voiceless closure has no voice to leak, so it only needs
+// `seal`: shut, but not so shut that the engine's loud release pop fires.
+let private seal = 0.015
+
+let private leak (index: float) : float =
+    curve [ (13.5, 0.005); (24.5, 0.007); (39.0, 0.012); (43.5, 0.07) ] index
+
+// The burst at a release. The recordings put its pitch near 2.5 kHz at every place (it is a wide gap
+// opening, not a groove, so the sibilant pitch of `s` does not apply), and its level near -30 dB under the
+// vowel, but the same noise is much quieter out of the lips than out of the tongue tip, so the amount of
+// noise needed is a curve of the place.
+let private burstHz = 2500.0
+
+let private burstLevel (index: float) : float =
+    curve
+        [ (13.5, 0.5); (24.5, 0.625); (29.5, 0.75); (33.0, 0.325); (39.0, 0.325); (40.0, 0.5); (42.0, 1.0)
+          (43.5, 1.5) ]
+        index
+
 // ### Stops
 //
 // Close, hold, release. What you hear is mostly in the transitions:
 //
 // - **During the closure** a voiceless stop is silent. A voiced stop keeps the voice on and, because
-//   the tube is not quite sealed (a tiny leak, `Timing.leak`), a faint low murmur gets out: the "voice bar"
+//   the tube is not quite sealed (a tiny leak, `leak`), a faint low murmur gets out: the "voice bar"
 // - **At the release** the pent-up air makes a short burst of noise, whose colour comes from the place
 // - **After the release** the voice starts after a delay, the *voice onset time*. Plain voiceless
 //   stops have a short one; aspirated ones (`pʰ`) a long one, filled with breath
@@ -581,7 +595,7 @@ let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline 
             fun f ->
                 { f with
                     C0i = (c0Of spec).Index
-                    C0d = Timing.leak
+                    C0d = (if voiced then leak (c0Of spec).Index else seal)
                     C0n = 0.0
                     Intensity = (if voiced then 0.85 else 0.0)
                     Tenseness = (if voiced then 0.5 else f.Tenseness) }
@@ -589,14 +603,14 @@ let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline 
             if voiced then 0.0
             elif o.Aspirated then Timing.votAspirated
             else Timing.votPlain
-        let breath = if voiced then 0.0 elif o.Aspirated then 0.9 else 0.5
+        let breath = if voiced then 0.0 elif o.Aspirated then 0.9 else 2.0
         let after = if x.WithVowel then Timing.afterCarrier else Timing.afterNone
         let built =
             tl
             |> Timeline.at closeAt closure
             |> Timeline.at releaseAt id
-            |> Timeline.at (releaseAt + 0.004) (fun f -> { f with C0d = 0.38; C0n = Timing.burstNoise; NoiseHz = spec.Hz })
-            |> Timeline.at (releaseAt + Timing.burst) (fun f -> { f with C0d = 1.2; C0n = Timing.burstNoise / 2.0 })
+            |> Timeline.at (releaseAt + 0.004) (fun f -> { f with C0d = 0.38; C0n = burstLevel (c0Of spec).Index; NoiseHz = burstHz })
+            |> Timeline.at (releaseAt + Timing.burst) (fun f -> { f with C0d = 1.2; C0n = burstLevel (c0Of spec).Index / 2.0 })
             |> Timeline.at (releaseAt + Timing.burst + 0.012) (fun f -> { f with C0d = 3.0; C0n = 0.0 })
             |> Timeline.at (releaseAt + Timing.burst + 0.012) (fun f -> { f with Aspiration = breath; C0d = 3.0 })
             |> Timeline.at (releaseAt + Timing.burst + 0.012 + vot) (fun f -> { f with Aspiration = 0.0; Intensity = 1.0; Tenseness = 0.6 })
@@ -621,7 +635,7 @@ let private affricate (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Time
         |> Timeline.at closeAt (fun f ->
             { f with
                 C0i = k.Index
-                C0d = Timing.leak
+                C0d = (if voiced then leak k.Index else seal)
                 C0n = 0.0
                 Intensity = (if voiced then 0.85 else 0.0)
                 Tenseness = (if voiced then 0.5 else 0.6) })
