@@ -114,12 +114,14 @@ test('frameAt and scaleTime agree with score.js on real gestures', { skip }, () 
   }
 });
 
-test('identify reads the held shape of a consonant back as that consonant', { skip }, () => {
+test('identify reads the held shape of a consonant back as itself or a symbol with exactly its shape', { skip }, () => {
   const held = Array.from(fs.held);
   assert.equal(held.length, 71);
+  const synonyms = Array.from(fs.synonyms).map(([a, b]) => `${a.Symbol} ${b.Symbol}`);
+  assert.deepEqual(synonyms.sort(), ['d d͡z', 't t͡s', 'ɖ ɖ͡ʐ', 'ʈ ʈ͡ʂ'].sort());
   for (const [c, frame] of held) {
     const [found, distance] = fs.identify(frame);
-    assert.equal(found.Symbol, c.Symbol);
-    assert.equal(distance, 0);
+    assert.equal(distance, 0, `/${c.Symbol}/`);
+    assert.ok(found.Symbol === c.Symbol || synonyms.includes(`${c.Symbol} ${found.Symbol}`) || synonyms.includes(`${found.Symbol} ${c.Symbol}`), `/${c.Symbol}/ read back as /${found.Symbol}/`);
   }
 });

@@ -1,8 +1,11 @@
 // # Lesson 2, part 2: consonants (in F#)
 //
-// A vowel is a *position*. A consonant is a *gesture*: a constriction made somewhere in the mouth,
-// in some manner, with or without the voice. The IPA consonant chart is organised by exactly those
-// three ideas, and this lesson turns each into a type:
+// A vowel is a *position*. A steady consonant is a position too: a constriction made somewhere in
+// the mouth (its place), as narrow as it is (its degree), with or without the voice and the nose.
+// Those are continuous: any place and any degree make a sound and a picture, and the IPA symbols are
+// only named points in that space. What a position cannot hold is *time*: a stop is a closure and a
+// burst, a tap a flick, a trill a flutter. Those are gestures, paths through the space. The IPA
+// consonant chart is organised by exactly these ideas, and this lesson turns each into a type:
 //
 // - **Place** (the columns): where the tract is narrowed, lips at the front to the glottis at the back
 // - **Manner** (the rows): how. A *plosive* closes completely and bursts open; a *fricative* leaves a
@@ -15,6 +18,7 @@
 //
 // - `gesture : Consonant -> Gesture` makes the movement (a score from lesson 2 part 1)
 // - `identify : Frame -> Consonant * float` looks at a held mouth shape and says which consonant it is
+//   (or which of the consonants that share that exact shape: see `synonyms`)
 //
 // It is the same idea as `lib/consonants.js`, rewritten so that the compiler checks it. Add a place
 // or a manner and every `match` that forgot it stops compiling.
@@ -173,14 +177,14 @@ let placeIndex (place: Place) : float option =
     | Labiodental -> Some 42.0
     | Dental -> Some 40.0
     | Alveolar -> Some 39.0
-    | Postalveolar -> Some 35.0
-    | Retroflex -> Some 33.5
+    | Postalveolar -> Some 36.5
+    | Retroflex -> Some 34.5
     | Palatal -> Some 29.5
     | Velar -> Some 24.5
     | Uvular -> Some 19.5
     | Pharyngeal -> Some 13.5
     | Glottal -> None
-    | AlveoloPalatal -> Some 32.0
+    | AlveoloPalatal -> Some 35.5
     | LabialVelar -> Some 43.5
     | LabialPalatal -> Some 43.5
 
@@ -196,31 +200,56 @@ type private Spec =
       C1: Constriction option
       Hz: float }
 
-// **Fricatives** (and the hiss of affricates). Per place: the gap (narrower than about 0.5 hisses,
-// narrower than 0.3 is too tight), the centre of the hiss in Hz, how strongly it hisses, and
-// sometimes a position that replaces the place's usual one. The sibilants (`s ʃ` and relatives) are
-// loud and sit near the front, so the cavity in front of the gap is small and resonates high. That
-// is why `s` is higher than `ʃ`: it is not a setting, it falls out of where the gap is.
+// ## The space a consonant lives in
 //
-// The glottis and the labial-palatal have no entry of their own; they borrow the alveolar one, as
-// the JavaScript does. (The glottal fricatives `h ɦ` never use it: they are breath through the
-// mouth, set up separately below.)
-let private fricativeOf (place: Place) : float * float * float * float option =
-    match place with
-    | Bilabial -> (0.5, 1500.0, 0.6, None)
-    | Labiodental -> (0.45, 3000.0, 0.6, None)
-    | Dental -> (0.45, 3500.0, 0.6, None)
-    | Alveolar -> (0.4, 6000.0, 1.0, Some 39.5)
-    | Postalveolar -> (0.4, 3200.0, 1.0, Some 36.5)
-    | Retroflex -> (0.4, 2800.0, 1.0, Some 34.5)
-    | AlveoloPalatal -> (0.4, 4500.0, 1.0, Some 34.0)
-    | Palatal -> (0.45, 3800.0, 0.85, None)
-    | Velar -> (0.5, 1800.0, 0.8, None)
-    | Uvular -> (0.5, 1200.0, 0.8, None)
-    | Pharyngeal -> (0.5, 900.0, 0.8, None)
-    | LabialVelar -> (0.5, 1500.0, 0.6, None)
-    | Glottal
-    | LabialPalatal -> (0.4, 6000.0, 1.0, Some 39.5)
+// A steady consonant is a point in a small continuous space, and the IPA symbols are only named
+// points in it, as the vowel symbols are named points on the vowel chart.
+//
+// - **place**: where along the tract it is made, any index from the throat (13) to the lips (43.5)
+// - **degree**: how narrow it is, any gap from 0 (shut) through about 0.4 (a hiss) and 0.5 to 1
+//   (a narrowing that only colours a vowel) up to 3 (open: no consonant at all)
+// - **nasal**: how open the nose is
+// - **voicing**: how much the voice is on
+//
+// Place and degree are the two dials; they are the `C0i` and `C0d` of a frame. What they do *not* get
+// is a hiss setting of their own. How loud the hiss is and where its pitch sits fall out of the
+// place, because they are properties of the tube in front of the gap:
+//
+// - the **pitch** follows the cavity between the gap and the lips. The shorter that cavity, the higher
+//   it resonates: `s` (just behind the teeth) is high, `ʃ` lower, `x` and the throat sounds low. A gap
+//   at the lips has no cavity at all, so the hiss there is low and broad.
+// - the **loudness** follows how well the place can make a jet of air hit something: the tongue tip
+//   and blade behind the teeth do it best, the lips and the back of the mouth less so.
+//
+// Both are smooth curves of the place, so sliding the place slides the hiss with it.
+let private curve (points: (float * float) list) (x: float) : float =
+    let (x0, y0) = List.head points
+    if x <= x0 then
+        y0
+    else
+        match points |> List.pairwise |> List.tryFind (fun (_, (x1, _)) -> x <= x1) with
+        | Some ((xa, ya), (xb, yb)) -> ya + ((yb - ya) * (x - xa)) / (xb - xa)
+        | None -> snd (List.last points)
+
+// Centre frequency of the hiss, in Hz, for a gap at `index`.
+let hissPitch (index: float) : float =
+    curve
+        [ (13.5, 900.0); (19.5, 1200.0); (24.5, 1800.0); (29.5, 3500.0); (33.0, 3000.0); (36.5, 3400.0)
+          (38.0, 4500.0); (39.0, 6000.0); (40.5, 4500.0); (42.0, 3200.0); (43.5, 1500.0) ]
+        index
+
+// How strongly a gap at `index` hisses, 0 to 1.
+let hissLevel (index: float) : float =
+    curve [ (13.5, 0.8); (24.5, 0.8); (29.5, 0.85); (33.0, 1.0); (39.0, 1.0); (40.5, 0.6); (43.5, 0.6) ] index
+
+// The degrees that the symbols use, as named points on the degree dial.
+let degreeFricative = 0.42
+let degreeLateral = 0.32
+
+// A consonant of a place and a degree, as the constriction the engine takes. This is the whole of the
+// mapping from the space to a frame: nothing here depends on which symbol it is.
+let private constriction (index: float) (gap: float) : Constriction =
+    { Index = index; Diameter = gap; Noise = (if gap < 0.6 then hissLevel index else 0.0) }
 
 // **Approximants.** A narrowing too wide to hiss, which changes the vowel-like resonances. `j` is a
 // palatal narrowing, `w` rounds the lips and raises the back of the tongue, `ɹ` (the English r)
@@ -241,26 +270,8 @@ let private approximants : Map<string, (Where * float) * (Where * float) option>
           ("ɥ", ((AtPlace LabialPalatal, 0.5), Some(AtIndex 29.5, 0.7))) ]
 
 // **Laterals.** A tube has no sides, so the midline is narrowed instead, to 0.32: tight enough to
-// dominate the sound. Lateral fricatives hiss at that gap (a little wider, 0.42).
-let private lateralGap = 0.32
-
-// Where a burst or release hisses, by place: a closer place releases higher.
-let private placeNoiseHz (place: Place) : float =
-    match place with
-    | Bilabial -> 1200.0
-    | Labiodental -> 2500.0
-    | Dental -> 3500.0
-    | Alveolar -> 4500.0
-    | Postalveolar -> 3000.0
-    | Retroflex -> 2800.0
-    | AlveoloPalatal -> 4000.0
-    | Palatal -> 3000.0
-    | Velar -> 2000.0
-    | Uvular -> 1400.0
-    | Pharyngeal -> 1000.0
-    | Glottal -> 1000.0
-    | LabialVelar
-    | LabialPalatal -> 2000.0
+// dominate the sound. Lateral fricatives hiss at the fricative degree (0.42), a unit further back than `s`.
+let private lateralGap = degreeLateral
 
 // Place and manner become the numbers each family of gesture needs. Every manner is listed, so
 // adding one to the type makes this function stop compiling until it is dealt with.
@@ -270,11 +281,15 @@ let private specOf (c: Consonant) : Spec =
     match c.Manner with
     | Fricative
     | Affricate ->
-        let (gap, hz, noise, over) = fricativeOf c.Place
-        let index = over |> Option.orElse position |> Option.defaultValue resting
-        { C0 = Some { Index = index; Diameter = gap; Noise = noise }; C1 = None; Hz = hz }
+        // The glottis has no place in the mouth; its fricatives are breath, set up separately.
+        (match position with
+         | None -> { C0 = None; C1 = None; Hz = 1000.0 }
+         | Some index -> { C0 = Some (constriction index degreeFricative); C1 = None; Hz = hissPitch index })
     | LateralFricative ->
-        { C0 = Some { Index = 38.5; Diameter = lateralGap + 0.1; Noise = 0.9 }; C1 = None; Hz = 3500.0 }
+        // A tube has no sides, so the air is made to escape "round the side" by putting the gap a little
+        // behind where the tongue tip is: that is the whole of the model's `ɬ`.
+        let index = Option.defaultValue resting position - 1.0
+        { C0 = Some (constriction index degreeFricative); C1 = None; Hz = hissPitch index }
     | LateralApproximant ->
         { C0 = Some { Index = Option.defaultValue resting position; Diameter = lateralGap; Noise = 0.0 }
           C1 = None
@@ -295,7 +310,7 @@ let private specOf (c: Consonant) : Spec =
     | Plosive ->
         { C0 = position |> Option.map (fun i -> { Index = i; Diameter = 0.0; Noise = 0.0 })
           C1 = None
-          Hz = placeNoiseHz c.Place }
+          Hz = (match position with Some i -> hissPitch i | None -> 1000.0) }
 
 // ## Timings
 //
@@ -687,15 +702,19 @@ let gesture (c: Consonant) : Gesture = gestureWith defaultOptions c
 
 // ## From the mouth back to the consonant
 //
-// Lesson 1's inverse was ill-posed: two formants cannot say where three things are. This one is not.
-// Hold each consonant against the neutral carrier, take the frame in the middle of the hold, and you
-// have 71 mouth shapes (the three taps cannot be held, so they have none). `identify` finds the
+// Lesson 1's inverse was ill-posed: two formants cannot say where three things are. This one is
+// not. Hold each consonant against the neutral carrier, take the frame in the middle of the hold, and
+// you have 71 mouth shapes (the three taps cannot be held, so they have none). `identify` finds the
 // nearest.
 //
 // **Nearest** needs a distance. Frame numbers are in different units (index units, gaps, Hz), so
 // each is divided by its typical range first, which makes a change of "one typical step" in any
 // field count the same. The tongue is left out, because identity is in the constrictions, the nose,
 // the lips and the voice, not in which vowel the mouth happens to be wrapped around.
+//
+// **Some symbols are the same point.** Place and degree are all a held shape knows. So `t` and `t͡s`
+// are one shape: they differ in how the closure is released, which is time. `identify` answers with the
+// first of them in chart order, and `synonyms` lists the pairs.
 let held : (Consonant * Frame) list =
     let options = { defaultOptions with Carrier = Some neutral }
     consonants
@@ -730,15 +749,22 @@ let identify (frame: Frame) : Consonant * float =
 // ## How far apart are the categories?
 //
 // A nearest-neighbour answer is only as trustworthy as the gaps between the things it chooses from.
-// If the two closest consonants are `margin` apart, then any mouth within half a margin of a
-// consonant is identified as it: the nearest one cannot be anywhere else. So the smallest gap is the
-// number that says how much wobble `identify` tolerates.
-let closestPair : Consonant * Consonant * float =
+// Leaving out the synonyms (which are the same point, so there is nothing to tell apart), if the two
+// closest *different* shapes are `margin` apart, then any mouth within half a margin of a consonant
+// is identified as it: the nearest one cannot be anywhere else. So the smallest gap is the number
+// that says how much wobble `identify` tolerates.
+let private pairs : (Consonant * Consonant * float) list =
     let shapes = List.toArray held
     [ for i in 0 .. shapes.Length - 1 do
         for j in i + 1 .. shapes.Length - 1 ->
             (fst shapes.[i], fst shapes.[j], distance (snd shapes.[i]) (snd shapes.[j])) ]
-    |> List.minBy (fun (_, _, d) -> d)
+
+// Pairs of consonants whose held shapes are exactly the same.
+let synonyms : (Consonant * Consonant) list =
+    pairs |> List.filter (fun (_, _, d) -> d = 0.0) |> List.map (fun (a, b, _) -> (a, b))
+
+let closestPair : Consonant * Consonant * float =
+    pairs |> List.filter (fun (_, _, d) -> d > 0.0) |> List.minBy (fun (_, _, d) -> d)
 
 let margin : float =
     let (_, _, d) = closestPair
@@ -746,15 +772,16 @@ let margin : float =
 
 // ## What to take away
 //
-// - **A consonant is a gesture, not a point.** Where a vowel was three numbers, a consonant is a
-//   score: closure, hold, release, with timings. `gesture` makes it and `Hold`, `Core` and `Steady`
-//   say which part is the consonant itself.
+// - **A steady consonant is a point; a stop, tap or trill is a path.** Place and degree are continuous
+//   dials, the hiss falls out of the place (`hissPitch`, `hissLevel`), and the symbols are named
+//   points. What a point cannot say is time: `gesture` makes the score (closure, hold, release) and
+//   `Hold`, `Core` and `Steady` say which part is the consonant itself.
 // - **Types do the bookkeeping.** `Place` and `Manner` are closed sets. `specOf`, `placeIndex`,
-//   `placeNoiseHz` and `kindOf` list every case, so extending the chart cannot silently skip one.
-// - **The inverse works here.** Consonants are categories, not a continuum, so the nearest category
-//   is meaningful. The smallest gap is `margin` (see the tests): it is between `ɹ` and `ɻ`, which
-//   the model separates by only half an index unit. That is a statement about the model, and about
-//   how little English speakers hear the difference.
+//   `specOf` and `kindOf` list every case, so extending the chart cannot silently skip one.
+// - **The inverse works here, up to synonyms.** The nearest named point is meaningful. The smallest
+//   gap between two different shapes is `margin` (see the tests), about one index unit; and a stop and
+//   its affricate (`synonyms`) are the same shape, because the difference between them is in time, and a
+//   held shape has none.
 // - **Not everything can be held.** A tap is over before it can be identified. `identify` reads
 //   postures, and a tap is a movement.
 //

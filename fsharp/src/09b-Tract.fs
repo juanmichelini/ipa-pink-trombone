@@ -32,9 +32,10 @@ let tractSections (sampleRate: float) (lengthCm: float) : int =
 // ## Landmarks along the tract, in index units
 //
 // The **blade** of the tongue starts at 10, the **tip** zone at 32, the **lips** at 39. The
-// **nasal branch** leaves the main tube at 17 and is 28 units long. A constriction at 41 or
-// beyond is made by the **lips** (the lower lip rising to the upper lip or teeth); one further back is
-// made by the **tongue**.
+// **nasal branch** leaves the main tube at 17 and is 28 units long. The **upper teeth** stand at 41
+// to 42: the tongue can reach their back face and no further, so a constriction at 40.5 or beyond is
+// made by the **lips** (the lower lip rising to the upper lip or teeth) and one further back by the
+// **tongue**.
 type Landmarks =
     { BladeStart: float
       TipStart: float
@@ -44,7 +45,7 @@ type Landmarks =
       LabialStart: float }
 
 let landmarks : Landmarks =
-    { BladeStart = 10.0; TipStart = 32.0; LipStart = 39.0; NoseStart = 17.0; NoseLength = 28.0; LabialStart = 41.0 }
+    { BladeStart = 10.0; TipStart = 32.0; LipStart = 39.0; NoseStart = 17.0; NoseLength = 28.0; LabialStart = 40.5 }
 
 // ## Two surfaces
 //
@@ -58,13 +59,12 @@ let landmarks : Landmarks =
 let none = 99.0
 
 // How wide the soft skirt of a constriction is, in index units each side. The back of the tongue is
-// broad, so a velar closure is long and gentle. The tip is narrow: a `t` touches the ridge over about
-// a centimetre. The lips close over even less.
+// broad, so a velar closure is long and gentle. The tip is narrower, and the lips narrower still.
 let skirtWidth (index: float) : float =
     if index >= landmarks.LabialStart then 1.8
     elif index < 25.0 then 10.0
-    elif index >= landmarks.TipStart + 1.0 then 2.2
-    else 10.0 - (7.8 * (index - 25.0)) / (landmarks.TipStart + 1.0 - 25.0)
+    elif index >= landmarks.TipStart + 1.0 then 3.2
+    else 10.0 - (6.8 * (index - 25.0)) / (landmarks.TipStart + 1.0 - 25.0)
 
 // ## The pieces of a tract
 //
@@ -191,7 +191,7 @@ let setShape (t: Tract) (frame: Frame) : unit =
                 d <- 1.5 - curve
             tongue[i] <- Math.Max(0.0, d)
             floor[i] <- none
-    // Constrictions pinch one of the two surfaces with a soft skirt: the lips for an index of 41 or
+    // Constrictions pinch one of the two surfaces with a soft skirt: the lips for an index of 40.5 or
     // more, the tongue otherwise. A gap of 3 or more is "not there".
     t.Constrictions.Clear()
     for (index, gap, noise) in [ (frame.C0i, frame.C0d, frame.C0n); (frame.C1i, frame.C1d, frame.C1n) ] do
