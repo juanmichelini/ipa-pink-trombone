@@ -10,6 +10,8 @@
   <!-- Compile order is lesson order: each file may use only the files above it. -->
   <ItemGroup>
     <Compile Include="src/01-TongueSpace.fs" />
+    <Compile Include="src/02a-Score.fs" />
+    <Compile Include="src/02b-Consonants.fs" />
   </ItemGroup>
 
 </Project>
