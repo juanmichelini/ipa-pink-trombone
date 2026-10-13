@@ -14,6 +14,7 @@
     <Compile Include="Lesson6Tests.fs" />
     <Compile Include="Lesson7Tests.fs" />
     <Compile Include="Lesson8Tests.fs" />
+    <Compile Include="Lesson9Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

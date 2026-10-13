@@ -89,9 +89,9 @@ rhythm classes are a simplification; accents are sketches of tendencies.
 ## The F# core (in progress)
 
 A pure F# version of the data-to-data layer, taught as lessons: `Tongue` and `Formants` with `toSound` and
-`fromSound` (lesson 1), then consonants, scores, the planner and so on. It is compiled to JavaScript by Fable
+`fromSound` (lesson 1), then consonants, scores, the planner, languages, voices, tempo, rhythm, accents (lessons 2 to 8) and the engine (lesson 9). It is compiled to JavaScript by Fable
 on every Vercel deploy into an uncommitted `core/`, so the site is still served as static files but the deploy now has a build step (it installs .NET). Purity is a property of each function's interface: the
-waveguide engine will keep local mutable loops inside a pure signature, because a fully immutable per-sample
+waveguide engine (lesson 9) keeps local mutable loops inside a pure signature, because a fully immutable per-sample
 step was measured at roughly 11 times slower than a mutable one and cannot run in real time. The JavaScript
 library stays the source the demos use until a lesson replaces a piece of it.
 
