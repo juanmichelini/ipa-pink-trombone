@@ -86,3 +86,40 @@ test('every consonant has a button, in the grid or in the extras', () => {
 test('a live demo has its page', () => {
   for (const d of demos.filter((x) => x.status === 'live')) assert.ok(existsSync(`demos/${d.slug}/index.html`) && existsSync(`demos/${d.slug}/main.js`), d.slug);
 });
+
+// ## Every place can hiss, and voicing is one dial
+//
+// Fricatives differ in place and in voicing and in nothing else, so a voiceless fricative has to be
+// audible at every place, and voicing it must keep the hiss.
+const FRICATIVE_PAIRS = [['ɸ', 'β'], ['f', 'v'], ['θ', 'ð'], ['s', 'z'], ['ʃ', 'ʒ'], ['ç', 'ʝ'], ['x', 'ɣ'], ['χ', 'ʁ']];
+// Energy above the voice: the second difference removes the low end, where the voice lives.
+const highEnergy = (samples) => {
+  let sum = 0;
+  for (let i = 2; i < samples.length; i++) { const d = samples[i] - 2 * samples[i - 1] + samples[i - 2]; sum += d * d; }
+  return Math.sqrt(sum / samples.length);
+};
+const held = (symbol) => {
+  const { g, samples } = play(symbol);
+  return samples.slice(Math.floor((g.hold.start + 0.04) * RATE), Math.floor(g.hold.end * RATE));
+};
+
+test('a voiceless fricative is audible at every place, the lips included', () => {
+  for (const [voiceless] of FRICATIVE_PAIRS) {
+    assert.ok(highEnergy(held(voiceless)) > 0.01, `${voiceless} hisses`);
+  }
+});
+
+test('voicing a fricative keeps its hiss', () => {
+  for (const [voiceless, voiced] of FRICATIVE_PAIRS) {
+    const ratio = highEnergy(held(voiced)) / highEnergy(held(voiceless));
+    assert.ok(ratio > 0.6 && ratio < 1.4, `${voiced} keeps the hiss of ${voiceless} (ratio ${ratio.toFixed(2)})`);
+  }
+});
+
+test('a tap pressed on its own is a flick, not a whole vowel around it', () => {
+  const alone = consonantGesture(consonantBySymbol('ɾ'));
+  const between = consonantGesture(consonantBySymbol('ɾ'), { carrier: { tongueIndex: 20, tongueDiameter: 3, lips: 1.5 } });
+  const length = (g) => normalizeScore(g.score).duration;
+  assert.ok(length(alone) < 0.15, `alone lasts ${length(alone).toFixed(3)} s`);
+  assert.ok(length(between) > length(alone) + 0.1);
+});
