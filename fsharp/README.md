@@ -16,6 +16,7 @@ written like the JavaScript source: prose in `//` comments in column 0, code aft
 | 4 | `src/04b-Languages.fs` | the ten languages, dictionary parsing, lookup and text to IPA |
 | 5 | `src/05-Voices.fs` | `Voice` presets, `speak`, `whisperScore`, and formants scaled by tract length |
 | 6 | `src/06-Tempo.fs` | two ways to go fast (`naive`, `speechLike`) and the measurements that tell them apart |
+| 7 | `src/07-Rhythm.fs` | syllables, stress-timed and syllable-timed durations, `rhythmPlan` and nPVI |
 
 Read a lesson in the browser at `/literate/?src=fsharp/src/01-TongueSpace.fs` (and likewise for the others).
 
