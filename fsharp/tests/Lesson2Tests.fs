@@ -180,11 +180,12 @@ let gestureTests =
                     Expect.isTrue (k.Frame.Velum >= 0.0 && k.Frame.Velum <= 0.5) (sprintf "/%s/ nose" c.Symbol)
         }
 
+        // (The hiss level is a gain, not a fraction: lips radiate little, so their hiss is turned up.)
         testProperty "frameAt stays in bounds at any moment of any gesture" (Prop.forAll sampleTimes (fun t ->
             consonants
             |> List.forall (fun c ->
                 let f = frameAt (gestureWith withNeutral c).Score.Keyframes t
-                f.Intensity >= 0.0 && f.Intensity <= 1.0 && f.C0d >= 0.0 && f.C0d <= 3.0 && f.C0n >= 0.0 && f.C0n <= 1.0)))
+                f.Intensity >= 0.0 && f.Intensity <= 1.0 && f.C0d >= 0.0 && f.C0d <= 3.0 && f.C0n >= 0.0 && f.C0n <= 5.0)))
 
         test "a voiceless stop is closed and silent in the middle of its hold; a voiced one murmurs" {
             for symbol in [ "p"; "t"; "k"; "q" ] do
