@@ -160,8 +160,10 @@ let bySymbol (symbol: string) : Consonant option =
 //
 // The engine measures the tract in index units: 0 at the glottis, 44 at the lips, one unit about
 // 0.39 cm. An articulator some distance from the lips has the index `44 - distance / 0.39`. The
-// distances are textbook figures for an adult: the alveolar ridge is about 2.5 cm behind the lips,
-// the palate 5.5, the soft palate 7.5, the uvula 9.5, the throat wall 12.
+// distances are textbook figures for an adult: the alveolar ridge is about 2 cm behind the lips (just
+// behind the upper teeth), the palate 5.5, the soft palate 7.5, the uvula 9.5, the throat wall 12.
+// From index 41 on, the articulator that closes is the lower lip; before that it is the tongue (the
+// engine, lesson 9, keeps the two apart).
 //
 // The glottis is not *in* the mouth, so it has no index. `None` says so, and the compiler makes
 // every caller deal with it.
@@ -170,7 +172,7 @@ let placeIndex (place: Place) : float option =
     | Bilabial -> Some 43.5
     | Labiodental -> Some 42.0
     | Dental -> Some 40.0
-    | Alveolar -> Some 37.5
+    | Alveolar -> Some 39.0
     | Postalveolar -> Some 35.0
     | Retroflex -> Some 33.5
     | Palatal -> Some 29.5
@@ -272,7 +274,7 @@ let private specOf (c: Consonant) : Spec =
         let index = over |> Option.orElse position |> Option.defaultValue resting
         { C0 = Some { Index = index; Diameter = gap; Noise = noise }; C1 = None; Hz = hz }
     | LateralFricative ->
-        { C0 = Some { Index = 37.0; Diameter = lateralGap + 0.1; Noise = 0.9 }; C1 = None; Hz = 3500.0 }
+        { C0 = Some { Index = 38.5; Diameter = lateralGap + 0.1; Noise = 0.9 }; C1 = None; Hz = 3500.0 }
     | LateralApproximant ->
         { C0 = Some { Index = Option.defaultValue resting position; Diameter = lateralGap; Noise = 0.0 }
           C1 = None

@@ -113,3 +113,14 @@ test('the tongue ends in a rounded tip that starts and ends on the body, for any
     for (const p of body.cap) assert.ok(Math.abs(Math.hypot(p.x - mx, p.y - my) - width / 2) < 1e-6);
   }
 });
+
+test('for a tongue-tip closure the tongue body reaches the ridge and the jaw stays at the lip opening', () => {
+  const t = shapeOf({ tongueIndex: 20, tongueDiameter: 3, lips: 1.5, c0i: 39, c0d: 0, c0n: 0 });
+  const g = tractGeometry(t);
+  const rest = tractGeometry(shapeOf({ tongueIndex: 20, tongueDiameter: 3, lips: 1.5 }));
+  assert.ok(g.tongue.to > rest.tongue.to, 'the body is carried forward by the tip');
+  const body = tongueBody(g);
+  assert.ok(g.tongue.to >= 40, 'at least as far as the ridge (section 39)');
+  assert.ok(body.top.some((p) => Math.hypot(p.x - g.outer[40].x, p.y - g.outer[40].y) < 1), 'and its top touches the palate there');
+  assert.deepEqual(g.jaw.slice(g.jawFrom).map((p) => [p.x, p.y]), rest.jaw.slice(rest.jawFrom).map((p) => [p.x, p.y]), 'the jaw line did not move');
+});

@@ -32,16 +32,39 @@ let tractSections (sampleRate: float) (lengthCm: float) : int =
 // ## Landmarks along the tract, in index units
 //
 // The **blade** of the tongue starts at 10, the **tip** zone at 32, the **lips** at 39. The
-// **nasal branch** leaves the main tube at 17 and is 28 units long.
+// **nasal branch** leaves the main tube at 17 and is 28 units long. A constriction at 41 or
+// beyond is made by the **lips** (the lower lip rising to the upper lip or teeth); one further back is
+// made by the **tongue**.
 type Landmarks =
     { BladeStart: float
       TipStart: float
       LipStart: float
       NoseStart: float
-      NoseLength: float }
+      NoseLength: float
+      LabialStart: float }
 
 let landmarks : Landmarks =
-    { BladeStart = 10.0; TipStart = 32.0; LipStart = 39.0; NoseStart = 17.0; NoseLength = 28.0 }
+    { BladeStart = 10.0; TipStart = 32.0; LipStart = 39.0; NoseStart = 17.0; NoseLength = 28.0; LabialStart = 41.0 }
+
+// ## Two surfaces
+//
+// The upper wall of the tract is fixed: the palate and the back of the throat. What moves is the
+// lower wall, and it is *two* things that happen to share a line in a one-dimensional tube: the
+// **tongue**, from the throat up to its tip, and the **jaw and lower lip** at the front, whose
+// opening is the `Lips` number. Each has its own gap to the upper wall, in the same units as the
+// tube's diameter, and the tube is as wide as the *smaller* of the two. Where one is absent its gap is
+// `none`, a number so large that the other always wins. Keeping them apart is what stops a tongue tip
+// that rises to the ridge from dragging the lips up with it.
+let none = 99.0
+
+// How wide the soft skirt of a constriction is, in index units each side. The back of the tongue is
+// broad, so a velar closure is long and gentle. The tip is narrow: a `t` touches the ridge over about
+// a centimetre. The lips close over even less.
+let skirtWidth (index: float) : float =
+    if index >= landmarks.LabialStart then 1.8
+    elif index < 25.0 then 10.0
+    elif index >= landmarks.TipStart + 1.0 then 2.2
+    else 10.0 - (7.8 * (index - 25.0)) / (landmarks.TipStart + 1.0 - 25.0)
 
 // ## The pieces of a tract
 //
@@ -80,6 +103,9 @@ type Tract =
       Diameters: float[]
       Areas: float[]
       Rest: float[]
+      // The two lower surfaces behind `Rest` (the tube is as wide as the smaller of the two).
+      Tongue: float[]
+      Floor: float[]
       NoseR: float[]
       NoseL: float[]
       NoseJunctionR: float[]
@@ -148,29 +174,31 @@ let setShape (t: Tract) (frame: Frame) : unit =
     let n = t.N
     let scale = t.Scale
     let fixedGap = 2.0 + (frame.TongueDiameter - 2.0) / 1.5
-    let target = t.Rest
+    let tongue = t.Tongue
+    let floor = t.Floor
     for i in 0 .. n - 1 do
         let u = float i / scale
-        let mutable d = if u < 7.0 - 0.5 then 0.6 elif u < 12.0 then 1.1 else 1.5
-        if u >= landmarks.BladeStart && u < landmarks.LipStart then
-            let angle = 1.1 * Math.PI * (frame.TongueIndex - u) / (landmarks.TipStart - landmarks.BladeStart)
-            let mutable curve = (1.5 - fixedGap + 1.7) * Math.Cos(angle)
-            if u < landmarks.BladeStart + 1.0 || u >= landmarks.LipStart - 1.0 then curve <- curve * 0.8
-            elif u < landmarks.BladeStart + 2.0 || u >= landmarks.LipStart - 2.0 then curve <- curve * 0.94
-            d <- 1.5 - curve
-        elif u >= landmarks.LipStart then
-            d <- frame.Lips
-        target[i] <- Math.Max(0.0, d)
-    // Constrictions pinch the tube with a soft skirt, wide at the back and narrow at the tip. A gap
-    // of 3 or more is "not there".
+        if u >= landmarks.LipStart then
+            tongue[i] <- none
+            floor[i] <- Math.Max(0.0, frame.Lips)
+        else
+            let mutable d = if u < 7.0 - 0.5 then 0.6 elif u < 12.0 then 1.1 else 1.5
+            if u >= landmarks.BladeStart then
+                let angle = 1.1 * Math.PI * (frame.TongueIndex - u) / (landmarks.TipStart - landmarks.BladeStart)
+                let mutable curve = (1.5 - fixedGap + 1.7) * Math.Cos(angle)
+                if u < landmarks.BladeStart + 1.0 || u >= landmarks.LipStart - 1.0 then curve <- curve * 0.8
+                elif u < landmarks.BladeStart + 2.0 || u >= landmarks.LipStart - 2.0 then curve <- curve * 0.94
+                d <- 1.5 - curve
+            tongue[i] <- Math.Max(0.0, d)
+            floor[i] <- none
+    // Constrictions pinch one of the two surfaces with a soft skirt: the lips for an index of 41 or
+    // more, the tongue otherwise. A gap of 3 or more is "not there".
     t.Constrictions.Clear()
     for (index, gap, noise) in [ (frame.C0i, frame.C0d, frame.C0n); (frame.C1i, frame.C1d, frame.C1n) ] do
         if gap < 3.0 then
             t.Constrictions.Add({ Index = index; Gap = gap; Noise = noise; Position = index * scale })
-            let width =
-                if index < 25.0 then 10.0
-                elif index >= landmarks.TipStart then 5.0
-                else 10.0 - (5.0 * (index - 25.0)) / (landmarks.TipStart - 25.0)
+            let surface = if index >= landmarks.LabialStart then floor else tongue
+            let width = skirtWidth index
             for i in 0 .. n - 1 do
                 let u = float i / scale
                 let rel = Math.Abs(u - index) - 0.5
@@ -178,7 +206,9 @@ let setShape (t: Tract) (frame: Frame) : unit =
                     if rel <= 0.0 then 0.0
                     elif rel > width then 1.0
                     else 0.5 * (1.0 - Math.Cos(Math.PI * rel / width))
-                if shrink < 1.0 && gap < target[i] then target[i] <- gap + (target[i] - gap) * shrink
+                if shrink < 1.0 && gap < surface[i] then surface[i] <- gap + (surface[i] - gap) * shrink
+    for i in 0 .. n - 1 do
+        t.Rest[i] <- Math.Min(tongue[i], floor[i])
     t.Velum <- clamp frame.Velum 0.01 0.6
     t.NoseDiameters[0] <- t.Velum
     t.NoseAreas[0] <- t.Velum ** 2.0
@@ -241,6 +271,8 @@ let makeTract (sampleRate: float) (lengthCm: float) : Tract =
           Diameters = make n
           Areas = make n
           Rest = make n
+          Tongue = make n
+          Floor = make n
           NoseR = make noseLength
           NoseL = make noseLength
           NoseJunctionR = make noseLength
@@ -350,6 +382,8 @@ type TractShape =
     { Sections: int
       Scale: float
       Diameter: float[]
+      Tongue: float[]
+      Floor: float[]
       NoseLength: int
       NoseStart: int
       NoseDiameter: float[]
@@ -362,6 +396,8 @@ let shapeOf (sampleRate: float) (lengthCm: float) (frame: Frame) : TractShape =
     { Sections = t.N
       Scale = t.Scale
       Diameter = Array.copy t.Diameters
+      Tongue = Array.copy t.Tongue
+      Floor = Array.copy t.Floor
       NoseLength = t.NoseLength
       NoseStart = t.NoseStart
       NoseDiameter = Array.copy t.NoseDiameters

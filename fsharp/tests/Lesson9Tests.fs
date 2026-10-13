@@ -133,4 +133,34 @@ let engineTests =
             Expect.floatClose Accuracy.high shut.NoseDiameter.[0] 0.01 "shut"
             Expect.floatClose Accuracy.high open'.NoseDiameter.[0] 0.4 "open"
         }
+
+        test "two surfaces: the tube is as wide as the nearer of the tongue and the jaw" {
+            for frame in [ defaultFrame
+                           { defaultFrame with TongueIndex = 27.0; TongueDiameter = 2.05; Lips = 0.4; C0i = 39.0; C0d = 0.0 }
+                           { defaultFrame with C0i = 43.5; C0d = 0.0 } ] do
+                let s = shapeOf 44100.0 17.1 frame
+                for i in 0 .. s.Sections - 1 do
+                    Expect.equal s.Diameter.[i] (min s.Tongue.[i] s.Floor.[i]) (sprintf "section %d" i)
+        }
+
+        test "a tip closure at the ridge leaves the lips and jaw where they were" {
+            let open' = shapeOf 44100.0 17.1 defaultFrame
+            let t = shapeOf 44100.0 17.1 { defaultFrame with C0i = 39.0; C0d = 0.0 }
+            Expect.equal t.Diameter.[39] 0.0 "closed at the ridge"
+            Expect.equal t.Floor.[43] 1.5 "the lower lip has not moved"
+            Expect.equal t.Floor open'.Floor "the jaw surface is untouched"
+        }
+
+        test "a lip closure leaves the tongue where it was" {
+            let open' = shapeOf 44100.0 17.1 defaultFrame
+            let p = shapeOf 44100.0 17.1 { defaultFrame with C0i = 43.5; C0d = 0.0 }
+            Expect.equal p.Diameter.[43] 0.0 "closed lips"
+            Expect.equal p.Tongue open'.Tongue "the tongue surface is untouched"
+        }
+
+        test "the skirt of a constriction narrows toward the front" {
+            Expect.isGreaterThan (skirtWidth 24.0) (skirtWidth 30.0) "back wider than middle"
+            Expect.isGreaterThan (skirtWidth 30.0) (skirtWidth 36.0) "middle wider than tip"
+            Expect.isLessThan (skirtWidth 43.5) (skirtWidth 36.0) "lips narrowest"
+        }
     ]

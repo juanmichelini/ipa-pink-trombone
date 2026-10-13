@@ -183,3 +183,41 @@ test('renderScore length and WAV encoding', () => {
   assert.equal(view.getUint32(40, true), out.length * 2);
   assert.equal(wav.length, 44 + out.length * 2);
 });
+
+// ## Two lower surfaces: the tongue, and the jaw and lower lip
+import { NONE, skirtWidth, LANDMARKS } from '../lib/pinktrombone.js';
+import { shapeOf as shapeOfFrame } from '../lib/tractshape.js';
+
+test('the tube is as wide as the nearer of the tongue and the jaw', () => {
+  for (const frame of [{ tongueIndex: 20, tongueDiameter: 2.5, lips: 1.5 }, { tongueIndex: 27, tongueDiameter: 2.05, lips: 0.4, c0i: 39, c0d: 0, c0n: 0 }, { c0i: 43.5, c0d: 0, c0n: 0 }]) {
+    const s = shapeOfFrame(frame);
+    for (let i = 0; i < s.n; i++) assert.equal(s.diameter[i], Math.min(s.tongue[i], s.floor[i]), `section ${i}`);
+  }
+});
+
+test('a tongue-tip closure at the ridge leaves the lips and jaw where they were', () => {
+  const open = shapeOfFrame({ lips: 1.5 });
+  const t = shapeOfFrame({ lips: 1.5, c0i: 39, c0d: 0, c0n: 0 });
+  assert.equal(t.diameter[39], 0, 'closed at the ridge');
+  assert.equal(t.floor[43], 1.5, 'the lower lip has not moved');
+  assert.equal(t.diameter[43], open.diameter[43], 'and neither has the tube at the lips');
+  assert.deepEqual(Array.from(t.floor), Array.from(open.floor), 'the jaw surface is untouched');
+});
+
+test('a lip closure leaves the tongue where it was', () => {
+  const open = shapeOfFrame({ tongueIndex: 20, tongueDiameter: 3 });
+  const p = shapeOfFrame({ tongueIndex: 20, tongueDiameter: 3, c0i: 43.5, c0d: 0, c0n: 0 });
+  assert.equal(p.diameter[43], 0);
+  assert.deepEqual(Array.from(p.tongue), Array.from(open.tongue));
+});
+
+test('a tip closure is short, a back-of-the-tongue closure is long', () => {
+  const width = (index) => {
+    const s = shapeOfFrame({ lips: 3, tongueDiameter: 3.5, c0i: index, c0d: 0, c0n: 0 });
+    return Array.from(s.diameter).filter((d) => d < 0.5).length;
+  };
+  assert.ok(width(39) <= 4, `tip closure ${width(39)} sections`);
+  assert.ok(width(24.5) >= 8, `velar closure ${width(24.5)} sections`);
+  assert.ok(skirtWidth(24) > skirtWidth(30) && skirtWidth(30) > skirtWidth(36), 'the skirt narrows toward the front');
+  assert.ok(NONE > 10 && LANDMARKS.labialStart > LANDMARKS.lipStart);
+});
