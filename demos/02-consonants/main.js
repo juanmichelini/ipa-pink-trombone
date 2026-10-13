@@ -14,7 +14,7 @@
 // With "between vowels" chosen, the gesture is wrapped in the same vowel on both sides, because
 // most consonants are heard by what they do to the vowels next to them.
 import { CONSONANTS, consonantBySymbol, consonantGesture, NOT_MODELLED } from '../../lib/consonants.js';
-import { concatScores, DEFAULT_FRAME } from '../../lib/score.js';
+import { concatScores, scaleTime, DEFAULT_FRAME } from '../../lib/score.js';
 import { shapeOfSymbol } from '../../lib/vowel-map.js';
 import { shapeOf } from '../../lib/tractshape.js';
 import { drawTract } from '../../lib/ui/tractview.js';
@@ -27,6 +27,7 @@ const synthHolder = lazySynth();
 let synth = null;
 let playing = null;
 let lastScore = null;
+const SINGLE_PRESS_STRETCH = 5;
 const state = { f0: 130, carrier: 'a', aspirated: false };
 const PITCH = [70, 400];
 
@@ -61,7 +62,10 @@ async function press(symbol) {
   held = symbol;
   if (playing) playing.cancel();
   const g = gestureOf(symbol);
-  lastScore = g.score;
+  // A single press lasts five times as long as the gesture's natural length, so each phase of it
+  // (closure, burst, release, glide) can be heard on its own.
+  const score = scaleTime(g.score, SINGLE_PRESS_STRETCH);
+  lastScore = score;
   try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   if (held !== symbol && g.kind === 'continuant') return; // let go before audio was ready
   if (g.kind === 'continuant' && state.carrier === 'none') {
@@ -70,7 +74,7 @@ async function press(symbol) {
     heldLive = true;
     synth.live({ ...g.steady, intensity: g.steady.intensity });
   } else {
-    playing = playAnimated(synth, g.score, (frame) => show(frame, symbol));
+    playing = playAnimated(synth, score, (frame) => show(frame, symbol));
   }
 }
 function release(symbol) {
