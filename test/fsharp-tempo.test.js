@@ -77,7 +77,7 @@ test('the squeeze ratios and the silent closure agree', { skip }, () => {
     let silent = 0;
     for (let k = 0; c.start + k * 0.002 < c.end; k++) {
       const f = frameAt(n, c.start + k * 0.002);
-      if (f.intensity < 0.05 && f.c0d < 0.01) silent += 0.002;
+      if (f.intensity < 0.05 && f.c0d < 0.02) silent += 0.002;
     }
     return silent;
   };

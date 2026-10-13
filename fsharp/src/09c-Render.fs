@@ -42,7 +42,8 @@ let makeVoice (sampleRate: float) (tractCm: float) (seed: int) (gain: float) : V
       Glottis = makeGlottis sampleRate rng
       Tract = makeTract sampleRate tractCm
       Aspirate = makeBandpass sampleRate 500.0 0.5
-      Fricative = makeBandpass sampleRate 1000.0 0.5
+      // Q of 2: a fricative's hiss is a band around its place's pitch, not the whole spectrum.
+      Fricative = makeBandpass sampleRate 1000.0 2.0
       Gain = gain
       Resets = 0
       TrillPhase = 0.0

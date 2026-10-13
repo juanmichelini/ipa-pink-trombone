@@ -38,6 +38,20 @@ We cannot hear CI. So the synthesis is tested numerically: render offline, estim
 response, and assert on relationships (`/i/` has a higher F2 than `/u/`) rather than on exact numbers. If you add a
 phonetic claim, add a test for it. `npm test` needs no install.
 
+## Against real recordings
+
+Numerical claims are better when they come from speech. `node scripts/fetch-reference.mjs` downloads the pulmonic
+consonant recordings of the [Wikipedia IPA chart with audio](https://en.wikipedia.org/wiki/IPA_consonant_chart_with_audio)
+into `ref/` as 44.1 kHz mono WAVs (needs `ffmpeg`). They are Wikimedia Commons files under free licences that need
+attribution; `ref/index.tsv` records each one's licence and author. `ref/` is git-ignored: use them to measure, never
+commit or redistribute them.
+
+`node scripts/compare-consonants.mjs [--png] [symbol ...]` renders each consonant between two "a" vowels with the
+same carrier and prints, for the recording and for us, its duration, level against the vowel, voice and hiss levels
+and the hiss centroid and peak. With `--png` it saves the two spectrograms side by side to `out/compare/`. Fix a
+sound by changing the dial or the curve that makes it (`hissLevel`, `hissPitch`, `voiceGain`, the constants in
+`lib/consonants.js`), never by special-casing a symbol, and mirror the change in `fsharp/src/02b-Consonants.fs`.
+
 ## Data
 
 Language data lives in `data/` as plain text (TSV). A dictionary change is a PR like any other; a test checks that

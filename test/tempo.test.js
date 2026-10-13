@@ -57,7 +57,7 @@ test('even at high rate a voiceless stop keeps a silent closure of at least 30 m
   let silent = 0, last = null;
   for (let t = c.start; t < c.end; t += 0.002) {
     const f = frameAt(n, t);
-    if (f.intensity < 0.05 && f.c0d < 0.01) silent += 0.002;
+    if (f.intensity < 0.05 && f.c0d < 0.02) silent += 0.002;
     last = f;
   }
   assert.ok(silent >= 0.03, `closure ${(silent * 1000).toFixed(0)} ms`);

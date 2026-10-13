@@ -4,6 +4,7 @@ import { CONSONANTS, CONSONANT_SYMBOLS, consonantBySymbol, consonantGesture, PLA
 import { renderScore, rms } from '../lib/render.js';
 import { bandEnergy } from '../lib/analysis.js';
 import { normalizeScore } from '../lib/score.js';
+import { shapeOfSymbol } from '../lib/vowel-map.js';
 
 const RATE = 44100;
 const play = (symbol, opts) => {
@@ -53,7 +54,7 @@ test('a nasal radiates sound through the nose with the mouth closed', () => {
   const m = play('m');
   const frame = normalizeScore(m.g.score).keyframes.find((k) => k.t >= m.g.hold.start + 0.01);
   assert.ok(frame.velum > 0.3 && frame.c0d < 0.01);
-  assert.ok(rms(slice(m.samples, m.g.hold.start + 0.08, m.g.hold.end)) > 0.02);
+  assert.ok(rms(slice(m.samples, m.g.hold.start + 0.08, m.g.hold.end)) > 0.01);
 });
 
 test('a trill modulates the amplitude over the hold', () => {
@@ -105,7 +106,7 @@ const held = (symbol) => {
 
 test('a voiceless fricative is audible at every place, the lips included', () => {
   for (const [voiceless] of FRICATIVE_PAIRS) {
-    assert.ok(highEnergy(held(voiceless)) > 0.01, `${voiceless} hisses`);
+    assert.ok(highEnergy(held(voiceless)) > 0.001, `${voiceless} hisses`);
   }
 });
 
@@ -124,10 +125,56 @@ test('a tap pressed on its own is a flick, not a whole vowel around it', () => {
   assert.ok(length(between) > length(alone) + 0.1);
 });
 
-test('in a voiced fricative the hiss is louder than the voice, as in speech', () => {
-  for (const symbol of ['z', 'ʒ', 'ð', 'ç', 'ʝ']) {
+// In the recordings (`scripts/compare-consonants.mjs`) the voice under a voiced fricative sits within a
+// few dB of its hiss either way: `z` and `ʒ` have a little more hiss than voice, `ð` and `ɣ` a little
+// more voice. Neither is lost.
+test('in a voiced fricative the voice and the hiss are within 20 dB of each other, as in speech', () => {
+  for (const symbol of ['z', 'ʒ', 'ð', 'ʝ', 'β', 'ɣ']) {
     const { g, samples } = play(symbol, { carrier: null });
     const seg = samples.slice(Math.floor((g.hold.start + 0.05) * RATE), Math.floor(g.hold.end * RATE));
-    assert.ok(bandEnergy(seg, RATE, 2000, 10000) > bandEnergy(seg, RATE, 80, 500), `${symbol}: hiss over voice`);
+    const dB = 10 * Math.log10(bandEnergy(seg, RATE, 2000, 10000) / bandEnergy(seg, RATE, 80, 500));
+    assert.ok(Math.abs(dB) < 20, `${symbol}: hiss is ${dB.toFixed(1)} dB over the voice`);
   }
+});
+
+// ## Levels measured against recordings
+//
+// These hold the model to what `scripts/compare-consonants.mjs` found in the Wikipedia IPA chart
+// recordings. They state relationships and wide margins, not the recordings' exact numbers.
+const CARRIER_A = shapeOfSymbol('a');
+const dbRe = (x, ref) => 20 * Math.log10(x / ref);
+const vowelRms = (r) => rms(slice(r.samples, 0.04, 0.1));
+
+test('sibilants hiss far louder than the other places, where the jet has nothing to hit', () => {
+  const loud = Math.min(highEnergy(held('s')), highEnergy(held('ʃ')));
+  for (const quiet of ['ɸ', 'θ', 'ç', 'x', 'χ', 'ħ']) {
+    assert.ok(highEnergy(held(quiet)) < loud / 3, `${quiet} is not as loud as the sibilants`);
+  }
+});
+
+test('nasals, glides and laterals are quieter than the vowel next to them', () => {
+  for (const symbol of ['m', 'n', 'ŋ', 'j', 'w', 'l', 'ɹ']) {
+    const r = play(symbol, { carrier: CARRIER_A });
+    const mid = (r.g.hold.start + r.g.hold.end) / 2;
+    const level = dbRe(rms(slice(r.samples, mid - 0.03, mid + 0.03)), vowelRms(r));
+    assert.ok(level < -8 && level > -40, `${symbol} is ${level.toFixed(1)} dB re the vowel`);
+  }
+});
+
+test('the voice bar of a voiced stop is well under the vowel, wherever the closure is', () => {
+  for (const symbol of ['b', 'd', 'ɡ', 'ɖ']) {
+    const r = play(symbol, { carrier: CARRIER_A });
+    const mid = (r.g.hold.start + r.g.hold.end) / 2;
+    const level = dbRe(rms(slice(r.samples, mid - 0.015, mid + 0.015)), vowelRms(r));
+    assert.ok(level < -12, `${symbol} murmurs at ${level.toFixed(1)} dB re the vowel`);
+  }
+});
+
+test('a release is a burst of hiss of about the same size at every place', () => {
+  const burst = (symbol) => {
+    const r = play(symbol, { carrier: CARRIER_A });
+    return highEnergy(slice(r.samples, r.g.hold.end, r.g.hold.end + 0.03));
+  };
+  const levels = ['p', 't', 'k', 'q'].map(burst);
+  assert.ok(Math.max(...levels) / Math.min(...levels) < 12, `bursts range over ${levels.map((x) => x.toFixed(4)).join(', ')}`);
 });

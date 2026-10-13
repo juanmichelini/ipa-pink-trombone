@@ -185,22 +185,22 @@ let gestureTests =
             consonants
             |> List.forall (fun c ->
                 let f = frameAt (gestureWith withNeutral c).Score.Keyframes t
-                f.Intensity >= 0.0 && f.Intensity <= 1.0 && f.C0d >= 0.0 && f.C0d <= 3.0 && f.C0n >= 0.0 && f.C0n <= 5.0)))
+                f.Intensity >= 0.0 && f.Intensity <= 1.0 && f.C0d >= 0.0 && f.C0d <= 3.0 && f.C0n >= 0.0 && f.C0n <= 6.0)))
 
         test "a voiceless stop is closed and silent in the middle of its hold; a voiced one murmurs" {
             for symbol in [ "p"; "t"; "k"; "q" ] do
                 let f = steadyOf symbol
-                Expect.equal f.C0d 0.0 (sprintf "/%s/ closed" symbol)
+                Expect.equal f.C0d 0.015 (sprintf "/%s/ closed but for the leak" symbol)
                 Expect.equal f.Intensity 0.0 (sprintf "/%s/ silent" symbol)
             for symbol in [ "b"; "d"; "ɡ"; "ɢ" ] do
                 let f = steadyOf symbol
-                Expect.equal f.C0d 0.12 (sprintf "/%s/ nearly closed: a leak" symbol)
+                Expect.equal f.C0d 0.015 (sprintf "/%s/ nearly closed: a leak" symbol)
                 Expect.equal f.Intensity 0.85 (sprintf "/%s/ voiced" symbol)
         }
 
         test "a stop releases through a burst of noise" {
             let keys = (gestureOf "t").Score.Keyframes
-            Expect.isTrue (keys |> List.exists (fun k -> k.Frame.C0d = 0.38 && k.Frame.C0n = 1.0)) "a hissing gap opens at the release"
+            Expect.isTrue (keys |> List.exists (fun k -> k.Frame.C0d = 0.38 && k.Frame.C0n = 0.2)) "a hissing gap opens at the release"
         }
 
         test "aspirated stops wait longer for the voice, by exactly the difference in voice onset time" {
@@ -229,7 +229,7 @@ let gestureTests =
                 let f = steadyOf symbol
                 Expect.equal f.C0d 0.0 (sprintf "/%s/ mouth closed" symbol)
                 Expect.equal f.Velum 0.42 (sprintf "/%s/ nose open" symbol)
-                Expect.equal f.Intensity 1.0 (sprintf "/%s/ voiced" symbol)
+                Expect.equal f.Intensity 0.15 (sprintf "/%s/ voiced, but quiet: the gap is shut" symbol)
         }
 
         test "trills flutter, the uvular one a little faster" {
@@ -319,7 +319,7 @@ let identifyTests =
 
         test "the two closest different shapes are about one index unit apart" {
             let (_, _, d) = closestPair
-            Expect.isTrue (d > 0.09 && d < 0.12) "1 index unit over a scale of 10, plus a little hiss pitch"
+            Expect.isTrue (d > 0.09 && d < 0.15) "about 1 index unit over a scale of 10, plus a little hiss pitch"
             Expect.equal margin d "margin is that distance"
         }
 

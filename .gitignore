@@ -7,3 +7,6 @@ bin/
 obj/
 
 core/
+
+# reference recordings (CC-licensed, local analysis only; see scripts/fetch-reference.mjs)
+ref/
