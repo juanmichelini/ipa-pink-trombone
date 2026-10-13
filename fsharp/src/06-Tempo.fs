@@ -74,6 +74,6 @@ let silentClosure (symbol: string) (p: Plan) : float =
         let samples = int (ceil ((mark.End - mark.Start) / 0.002))
         [ 0 .. samples - 1 ]
         |> List.map (fun k -> frameAt p.Score.Keyframes (mark.Start + float k * 0.002))
-        |> List.filter (fun f -> f.Intensity < 0.05 && f.C0d < 0.01)
+        |> List.filter (fun f -> f.Intensity < 0.05 && f.C0d < 0.02)
         |> List.length
         |> fun count -> float count * 0.002

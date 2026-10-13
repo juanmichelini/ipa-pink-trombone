@@ -234,13 +234,20 @@ let private curve (points: (float * float) list) (x: float) : float =
 // Centre frequency of the hiss, in Hz, for a gap at `index`.
 let hissPitch (index: float) : float =
     curve
-        [ (13.5, 900.0); (19.5, 1200.0); (24.5, 1800.0); (29.5, 3500.0); (33.0, 3000.0); (36.5, 3400.0)
-          (38.0, 4500.0); (39.0, 6000.0); (40.5, 4500.0); (42.0, 3200.0); (43.5, 1500.0) ]
+        [ (13.5, 900.0); (19.5, 1200.0); (24.5, 1800.0); (29.5, 2200.0); (34.5, 1800.0); (36.5, 2700.0)
+          (39.0, 7600.0); (40.0, 2800.0); (42.0, 3800.0); (43.5, 2000.0) ]
         index
 
-// How strongly a gap at `index` hisses, 0 to 1.
+// How strongly a gap at `index` hisses. The sibilants (the tongue tip and blade just behind the teeth,
+// from the postalveolar region to the alveolar ridge) are the loud ones. Everywhere else the jet has
+// nothing good to hit and the hiss is 10 to 25 dB quieter (measured against recordings, see
+// `scripts/compare-consonants.mjs`): the lips and the throat least, the teeth in between. The
+// labiodental gap is wide open at the lips, so the hiss that gets out needs more push.
 let hissLevel (index: float) : float =
-    curve [ (13.5, 0.8); (24.5, 0.8); (29.5, 0.85); (33.0, 1.0); (39.0, 1.0); (40.5, 1.2); (42.0, 4.5); (43.5, 4.5) ] index
+    curve
+        [ (13.5, 0.22); (19.5, 0.2); (24.5, 0.15); (29.5, 0.48); (33.0, 4.0); (37.0, 4.0); (39.0, 1.7)
+          (40.0, 0.5); (42.0, 5.4); (43.5, 1.4) ]
+        index
 
 // The degrees that the symbols use, as named points on the degree dial.
 let degreeFricative = 0.42
@@ -248,11 +255,14 @@ let degreeLateral = 0.32
 
 // A consonant of a place and a degree, as the constriction the engine takes. This is the whole of the
 // mapping from the space to a frame: nothing here depends on which symbol it is.
-/// Voicing is one dial for every consonant. The only thing that depends on the others is that a gap
-/// narrow enough to hiss shares the airstream with the voice, so the voice sits well under the hiss,
-/// like the quiet murmur under a real `z`: the most voice a consonant with `hiss` can have. Nothing
-/// here depends on the symbol.
-let voiceGain (hiss: float) : float = if hiss > 0.0 then 0.12 else 1.0
+/// Voicing is one dial for every consonant. What it can reach depends on the gap, never on the symbol:
+/// a gap narrow enough to hiss shares the airstream with the voice, so the voice sits well under the
+/// hiss, like the quiet murmur under a real `z`; a gap that is closed or only just open (a nasal, a
+/// glide, a lateral) lets the voice out about 15 dB quieter than a vowel does; a gap of 1.5 or more
+/// is a vowel and the voice is full. `voiceGain hiss gap` is the most voice a consonant with that
+/// much hiss and that gap can have.
+let voiceGain (hiss: float) (gap: float) : float =
+    if hiss > 0.0 then 0.12 else curve [ (0.9, 0.15); (1.5, 1.0) ] gap
 
 let private constriction (index: float) (gap: float) : Constriction =
     { Index = index; Diameter = gap; Noise = (if gap < 0.6 then hissLevel index else 0.0) }
@@ -279,6 +289,10 @@ let private approximants : Map<string, (Where * float) * (Where * float) option>
 // dominate the sound. Lateral fricatives hiss at the fricative degree (0.42), a unit further back than `s`.
 let private lateralGap = degreeLateral
 
+// A lateral fricative lets the air out round the sides of the tongue, not over a jet, so it hisses
+// far less than a sibilant: about 12 dB in the recordings.
+let private lateralHiss = 0.25
+
 // Place and manner become the numbers each family of gesture needs. Every manner is listed, so
 // adding one to the type makes this function stop compiling until it is dealt with.
 let private specOf (c: Consonant) : Spec =
@@ -295,7 +309,8 @@ let private specOf (c: Consonant) : Spec =
         // A tube has no sides, so the air is made to escape "round the side" by putting the gap a little
         // behind where the tongue tip is: that is the whole of the model's `ɬ`.
         let index = Option.defaultValue resting position - 1.0
-        { C0 = Some (constriction index degreeFricative); C1 = None; Hz = hissPitch index }
+        let k = constriction index degreeFricative
+        { C0 = Some { k with Noise = k.Noise * lateralHiss }; C1 = None; Hz = hissPitch index }
     | LateralApproximant ->
         { C0 = Some { Index = Option.defaultValue resting position; Diameter = lateralGap; Noise = 0.0 }
           C1 = None
@@ -335,6 +350,14 @@ module private Timing =
     let trillHold = 0.3
     let tapClosure = 0.018
     let burst = 0.014
+
+    /// How far a closure for a voiced stop is open: the "not quite sealed" tube that lets a faint voice
+    /// bar out. The recordings put it about 25 dB under the vowel.
+    let leak = 0.015
+
+    /// How hard the pent-up air hisses for an instant at a release. The recordings put it near -30 dB
+    /// under the vowel at every place, sibilant or not, so it is one number and not a curve of the place.
+    let burstNoise = 0.2
     let votPlain = 0.016 // voice onset time of a plain voiceless stop
     let votAspirated = 0.07
     let affricateFrication = 0.1
@@ -448,7 +471,8 @@ let private continuant (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Tim
         | _ -> Timing.approximantHold
     let holdEnd = closeAt + (Option.defaultValue natural x.Opts.HoldFor)
     let hiss = match spec.C0 with Some k -> k.Noise | None -> 0.0
-    let voicing = if c.Voiced then voiceGain hiss else 0.0
+    let gap = match spec.C0 with Some k -> k.Diameter | None -> 3.0
+    let voicing = if c.Voiced then voiceGain hiss gap else 0.0
     let target : Change =
         if c.Symbol = "h" || c.Symbol = "ɦ" then
             if c.Voiced then
@@ -531,7 +555,7 @@ let private trill (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline
 // Close, hold, release. What you hear is mostly in the transitions:
 //
 // - **During the closure** a voiceless stop is silent. A voiced stop keeps the voice on and, because
-//   the tube is not quite sealed (a leak of 0.12), a faint low murmur gets out: the "voice bar"
+//   the tube is not quite sealed (a tiny leak, `Timing.leak`), a faint low murmur gets out: the "voice bar"
 // - **At the release** the pent-up air makes a short burst of noise, whose colour comes from the place
 // - **After the release** the voice starts after a delay, the *voice onset time*. Plain voiceless
 //   stops have a short one; aspirated ones (`pʰ`) a long one, filled with breath
@@ -557,7 +581,7 @@ let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline 
             fun f ->
                 { f with
                     C0i = (c0Of spec).Index
-                    C0d = (if voiced then 0.12 else 0.0)
+                    C0d = Timing.leak
                     C0n = 0.0
                     Intensity = (if voiced then 0.85 else 0.0)
                     Tenseness = (if voiced then 0.5 else f.Tenseness) }
@@ -571,8 +595,8 @@ let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline 
             tl
             |> Timeline.at closeAt closure
             |> Timeline.at releaseAt id
-            |> Timeline.at (releaseAt + 0.004) (fun f -> { f with C0d = 0.38; C0n = 1.0; NoiseHz = spec.Hz })
-            |> Timeline.at (releaseAt + Timing.burst) (fun f -> { f with C0d = 1.2; C0n = 0.5 })
+            |> Timeline.at (releaseAt + 0.004) (fun f -> { f with C0d = 0.38; C0n = Timing.burstNoise; NoiseHz = spec.Hz })
+            |> Timeline.at (releaseAt + Timing.burst) (fun f -> { f with C0d = 1.2; C0n = Timing.burstNoise / 2.0 })
             |> Timeline.at (releaseAt + Timing.burst + 0.012) (fun f -> { f with C0d = 3.0; C0n = 0.0 })
             |> Timeline.at (releaseAt + Timing.burst + 0.012) (fun f -> { f with Aspiration = breath; C0d = 3.0 })
             |> Timeline.at (releaseAt + Timing.burst + 0.012 + vot) (fun f -> { f with Aspiration = 0.0; Intensity = 1.0; Tenseness = 0.6 })
@@ -597,13 +621,13 @@ let private affricate (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Time
         |> Timeline.at closeAt (fun f ->
             { f with
                 C0i = k.Index
-                C0d = (if voiced then 0.12 else 0.0)
+                C0d = Timing.leak
                 C0n = 0.0
                 Intensity = (if voiced then 0.85 else 0.0)
                 Tenseness = (if voiced then 0.5 else 0.6) })
         |> Timeline.at releaseAt id
         |> Timeline.at (releaseAt + 0.006) (fun f ->
-            { f with C0d = k.Diameter; C0n = k.Noise; NoiseHz = spec.Hz; Intensity = (if voiced then voiceGain k.Noise else 0.0) })
+            { f with C0d = k.Diameter; C0n = k.Noise; NoiseHz = spec.Hz; Intensity = (if voiced then voiceGain k.Noise k.Diameter else 0.0) })
         |> Timeline.at (releaseAt + 0.006 + Timing.affricateFrication) id
         |> Timeline.at released (fun f ->
             { f with C0d = 3.0; C0n = 0.0; Intensity = (if x.WithVowel || voiced then 1.0 else 0.0); Tenseness = 0.6 })
