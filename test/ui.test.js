@@ -100,3 +100,16 @@ test('the tongue body sits below its upper surface and follows it', () => {
   assert.equal(body.top.length, body.bottom.length);
   assert.ok(body.bottom.every((p, i) => Math.hypot(p.x - body.top[i].x, p.y - body.top[i].y) > 4));
 });
+
+test('the tongue ends in a rounded tip that starts and ends on the body, for any jaw and lips', () => {
+  for (const frame of [{ tongueIndex: 20, tongueDiameter: 2.5, lips: 1.5 }, { tongueIndex: 14, tongueDiameter: 3.5, lips: 3.2 }, { tongueIndex: 27, tongueDiameter: 2.05, lips: 0.2 }]) {
+    const body = tongueBody(tractGeometry(shapeOf(frame)));
+    assert.ok(body.cap.length >= 5);
+    const end = body.top.length - 1;
+    const width = Math.hypot(body.top[end].x - body.bottom[end].x, body.top[end].y - body.bottom[end].y);
+    assert.ok(width > 12, `blunt tip: ${width}`);
+    // every point of the cap is on a circle round the middle of the tip
+    const mx = (body.top[end].x + body.bottom[end].x) / 2, my = (body.top[end].y + body.bottom[end].y) / 2;
+    for (const p of body.cap) assert.ok(Math.abs(Math.hypot(p.x - mx, p.y - my) - width / 2) < 1e-6);
+  }
+});
