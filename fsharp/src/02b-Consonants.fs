@@ -354,7 +354,7 @@ module private Timing =
     let votAspirated = 0.07
     let affricateFrication = 0.1
     let afterCarrier = 0.16
-    let afterNone = 0.14 // a short neutral vowel after a stop, so the release has something to release into
+    let afterNone = 0.03 // after a stop with no carrier: nothing but the end of the release
 
 // ## Carriers
 //
@@ -447,6 +447,15 @@ let private c0Of (spec: Spec) : Constriction =
     | Some k -> k
     | None -> { Index = 30.0; Diameter = 3.0; Noise = 0.0 }
 
+// The least hiss, as a curve of the place, that makes a consonant heard on its own about as loud as an
+// `s`: how much noise it takes to get the same sound out. Far less at the tongue tip than at the lips,
+// where most of it never leaves the mouth (measured by rendering each place at a known amount).
+let private aloneHiss (index: float) : float =
+    curve
+        [ (13.5, 3.2); (19.5, 2.8); (24.5, 1.7); (29.5, 1.8); (33.0, 1.0); (39.0, 1.0); (40.0, 3.2); (42.0, 19.0)
+          (43.5, 12.6) ]
+        index
+
 // ### Continuants: fricatives, nasals, approximants, laterals
 //
 // Move to the target, hold, move back. Voiceless sounds switch the voice off while the constriction
@@ -470,19 +479,25 @@ let private continuant (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Tim
             if c.Voiced then
                 (fun f -> { f with Aspiration = 0.55; Intensity = 0.55; Tenseness = 0.25 })
             else
-                (fun f -> { f with Aspiration = 1.0; Intensity = 0.0 })
+                (fun f -> { f with Aspiration = (if x.WithVowel then 1.0 else 4.0); Intensity = 0.0 })
         else
             all
                 [ (fun f ->
                     match spec.C0 with
-                    | Some k -> { f with C0i = k.Index; C0d = k.Diameter; C0n = k.Noise }
+                    | Some k ->
+                        // Alone, there is no vowel to be quiet against: a hiss comes up to the level of an `s`.
+                        let n = if not x.WithVowel && k.Noise > 0.0 then max k.Noise (aloneHiss k.Index) else k.Noise
+                        { f with C0i = k.Index; C0d = k.Diameter; C0n = n }
                     | None -> f)
                   (fun f ->
                       match spec.C1 with
                       | Some k -> { f with C1i = k.Index; C1d = k.Diameter; C1n = k.Noise }
                       | None -> f)
                   (fun f -> if c.Manner = Nasal then { f with Velum = 0.42 } else f)
-                  (fun f -> { f with Intensity = voicing })
+                  (fun f ->
+                      // ... and a nasal or glide gets the full voice, so every sound held alone is about as loud.
+                      let alone = if not x.WithVowel && hiss = 0.0 && c.Voiced then 1.0 else voicing
+                      { f with Intensity = alone })
                   (fun f -> if hiss > 0.0 && c.Voiced then { f with Tenseness = 0.45 } else f)
                   (fun f -> if c.Symbol = "ʍ" then { f with Lips = 0.6 } else f)
                   (fun f -> if c.Symbol = "w" || c.Symbol = "ɥ" then { f with Lips = 0.55 } else f) ]
@@ -564,6 +579,13 @@ let private burstLevel (index: float) : float =
           (43.5, 1.5) ]
         index
 
+// With the voice on, the same burst is lost under the harmonics, so a voiced release needs several times
+// the noise (most at the tongue tip, least at the back) to be heard at about the recordings' level.
+let private voicedBurstLevel (index: float) : float =
+    curve
+        [ (13.5, 1.5); (24.5, 2.0); (29.5, 3.0); (33.0, 4.9); (39.0, 4.9); (40.0, 6.0); (42.0, 8.0); (43.5, 10.0) ]
+        index
+
 // ### Stops
 //
 // Close, hold, release. What you hear is mostly in the transitions:
@@ -605,15 +627,16 @@ let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline 
             else Timing.votPlain
         let breath = if voiced then 0.0 elif o.Aspirated then 0.9 else 2.0
         let after = if x.WithVowel then Timing.afterCarrier else Timing.afterNone
+        let burst = (if voiced then voicedBurstLevel else burstLevel) (c0Of spec).Index
         let built =
             tl
             |> Timeline.at closeAt closure
             |> Timeline.at releaseAt id
-            |> Timeline.at (releaseAt + 0.004) (fun f -> { f with C0d = 0.38; C0n = burstLevel (c0Of spec).Index; NoiseHz = burstHz })
-            |> Timeline.at (releaseAt + Timing.burst) (fun f -> { f with C0d = 1.2; C0n = burstLevel (c0Of spec).Index / 2.0 })
+            |> Timeline.at (releaseAt + 0.004) (fun f -> { f with C0d = 0.38; C0n = burst; NoiseHz = burstHz })
+            |> Timeline.at (releaseAt + Timing.burst) (fun f -> { f with C0d = 1.2; C0n = burst / 2.0 })
             |> Timeline.at (releaseAt + Timing.burst + 0.012) (fun f -> { f with C0d = 3.0; C0n = 0.0 })
             |> Timeline.at (releaseAt + Timing.burst + 0.012) (fun f -> { f with Aspiration = breath; C0d = 3.0 })
-            |> Timeline.at (releaseAt + Timing.burst + 0.012 + vot) (fun f -> { f with Aspiration = 0.0; Intensity = 1.0; Tenseness = 0.6 })
+            |> Timeline.at (releaseAt + Timing.burst + 0.012 + vot) (fun f -> { f with Aspiration = 0.0; Intensity = (if x.WithVowel then 1.0 else 0.0); Tenseness = 0.6 })
             |> Timeline.at (releaseAt + Timing.burst + 0.012 + vot + after) id
         (built, { Start = closeAt; End = releaseAt })
 
@@ -644,18 +667,11 @@ let private affricate (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Time
             { f with C0d = k.Diameter; C0n = k.Noise; NoiseHz = spec.Hz; Intensity = (if voiced then voiceGain k.Noise k.Diameter else 0.0) })
         |> Timeline.at (releaseAt + 0.006 + Timing.affricateFrication) id
         |> Timeline.at released (fun f ->
-            { f with C0d = 3.0; C0n = 0.0; Intensity = (if x.WithVowel || voiced then 1.0 else 0.0); Tenseness = 0.6 })
+            { f with C0d = 3.0; C0n = 0.0; Intensity = (if x.WithVowel then 1.0 else 0.0); Tenseness = 0.6 })
         |> Timeline.at (released + after) id
     // With no carrier vowel the voice must be on at the very end, so the last key is patched
     // (and only that key: the frame the timeline carries is not used afterwards).
-    let finished =
-        if x.WithVowel then
-            built
-        else
-            match built.Keys with
-            | last :: earlier -> { built with Keys = { last with Frame = { last.Frame with Intensity = 1.0 } } :: earlier }
-            | [] -> built
-    (finished, { Start = closeAt; End = releaseAt })
+    (built, { Start = closeAt; End = releaseAt })
 
 // ### Taps
 //

@@ -185,7 +185,7 @@ let gestureTests =
             consonants
             |> List.forall (fun c ->
                 let f = frameAt (gestureWith withNeutral c).Score.Keyframes t
-                f.Intensity >= 0.0 && f.Intensity <= 1.0 && f.C0d >= 0.0 && f.C0d <= 3.0 && f.C0n >= 0.0 && f.C0n <= 6.0)))
+                f.Intensity >= 0.0 && f.Intensity <= 1.0 && f.C0d >= 0.0 && f.C0d <= 3.0 && f.C0n >= 0.0 && f.C0n <= 20.0)))
 
         test "a voiceless stop is closed and silent in the middle of its hold; a voiced one murmurs" {
             for symbol in [ "p"; "t"; "k"; "q" ] do
