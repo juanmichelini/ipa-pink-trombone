@@ -1,8 +1,9 @@
 /* Shared styles for the landing page, the literate viewer and every demo. */
 :root {
   color-scheme: dark;
-  /* The page is dark. Pink is reserved for the vocal tract itself, as in Pink Trombone;
-     the interface uses a pink-purple accent so the two never compete. */
+  /* The page is dark. The vocal tract has its own colours, as in the 🗣️ emoji: a blue head and green
+     parts that move (tongue, soft palate, lips, vocal cords). The interface uses a purple accent so
+     they never compete. */
   --bg: #0b0b0e;
   --panel: #15151b;
   --ink: #ececf1;
@@ -13,9 +14,10 @@
   --accent-soft: #2a1d3d;
   --code-bg: #0f0f14;
   --code-ink: #ececf1;
-  --pink: #ff7aa8;
-  --pink-soft: #3a1f2d;
-  --tongue: #ff5c8d;
+  --head: #55acee;
+  --tissue: #5fd68a;
+  --tissue-soft: #1d3a2a;
+  --tongue: #3fbf6f;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --ipa: "Charis SIL", "Gentium Plus", "Doulos SIL", "Noto Sans", "Segoe UI", "DejaVu Sans", sans-serif;
