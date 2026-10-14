@@ -146,9 +146,38 @@ const dbRe = (x, ref) => 20 * Math.log10(x / ref);
 const vowelRms = (r) => rms(slice(r.samples, 0.04, 0.1));
 
 test('sibilants hiss far louder than the other places, where the jet has nothing to hit', () => {
-  const loud = Math.min(highEnergy(held('s')), highEnergy(held('ʃ')));
+  // Against a vowel, as in the recordings. (Held alone, every hiss is brought up to about the same level.)
+  const around = (symbol) => {
+    const r = play(symbol, { carrier: CARRIER_A });
+    return highEnergy(slice(r.samples, r.g.hold.start + 0.04, r.g.hold.end));
+  };
+  const loud = Math.min(around('s'), around('ʃ'));
   for (const quiet of ['ɸ', 'θ', 'ç', 'x', 'χ', 'ħ']) {
-    assert.ok(highEnergy(held(quiet)) < loud / 3, `${quiet} is not as loud as the sibilants`);
+    assert.ok(around(quiet) < loud / 3, `${quiet} is not as loud as the sibilants`);
+  }
+});
+
+test('held alone, every hiss is about as loud as an s, whatever the place', () => {
+  const level = (symbol) => 20 * Math.log10(rms(held(symbol)));
+  for (const symbol of ['ɸ', 'f', 'θ', 'ʃ', 'ç', 'x', 'χ', 'ħ']) {
+    assert.ok(Math.abs(level(symbol) - level('s')) < 8, `${symbol} alone is ${(level(symbol) - level('s')).toFixed(1)} dB from s`);
+  }
+});
+
+test('a stop on its own is only its release: no vowel follows', () => {
+  for (const symbol of ['p', 't', 'k', 'd', 'ɡ', 't͡s']) {
+    const r = play(symbol);
+    const end = r.g.score.keyframes.at(-1).t;
+    assert.ok(rms(slice(r.samples, end - 0.02, end)) < 0.002, `${symbol} ends silent`);
+    assert.ok(r.g.score.keyframes.every((k) => k.t < r.g.hold.end + 0.2), `${symbol} has no long tail`);
+  }
+});
+
+test('a voiced stop has a release you can hear, not just a murmur that turns into a vowel', () => {
+  for (const symbol of ['b', 'd', 'ɡ']) {
+    const r = play(symbol, { carrier: CARRIER_A });
+    const at = r.g.hold.end;
+    assert.ok(highEnergy(slice(r.samples, at, at + 0.02)) > 2 * highEnergy(slice(r.samples, at - 0.03, at - 0.01)), `${symbol} bursts`);
   }
 });
 
