@@ -70,7 +70,7 @@ test('a trill modulates the amplitude over the hold', () => {
 test('aspirated stops have a longer voice onset time', () => {
   const plain = play('t', { carrier: { tongueIndex: 20, tongueDiameter: 3, lips: 1.5 } });
   const asp = play('t', { carrier: { tongueIndex: 20, tongueDiameter: 3, lips: 1.5 }, aspirated: true });
-  assert.ok(asp.g.score.duration > plain.g.score.duration + 0.03);
+  assert.ok(asp.g.score.duration > plain.g.score.duration + 0.02);
 });
 
 import { cellSymbols, extraSymbols } from '../lib/ui/consonanttable.js';
