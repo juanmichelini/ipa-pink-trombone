@@ -2,18 +2,18 @@
 :root {
   color-scheme: dark;
   /* The page is dark. The vocal tract has its own colours, as in the 🗣️ emoji: a blue head and green
-     parts that move (tongue, soft palate, lips, vocal cords). The interface uses a purple accent so
-     they never compete. */
-  --bg: #0b0b0e;
-  --panel: #15151b;
-  --ink: #ececf1;
-  --muted: #9a9aab;
-  --line: #2a2a35;
-  --accent: #c47dff;
-  --accent-strong: #8f45d8;
-  --accent-soft: #2a1d3d;
-  --code-bg: #0f0f14;
-  --code-ink: #ececf1;
+     parts that move (tongue, soft palate, lips, vocal cords). The interface is the same blue, on cool
+     navy-tinted greys, with green kept for the tract's moving parts. */
+  --bg: #0a0d12;
+  --panel: #121820;
+  --ink: #e8eef6;
+  --muted: #8fa0b5;
+  --line: #232d3b;
+  --accent: #6db8f2;
+  --accent-strong: #2b78c8;
+  --accent-soft: #14263f;
+  --code-bg: #0d1218;
+  --code-ink: #e8eef6;
   --head: #55acee;
   --tissue: #5fd68a;
   --tissue-soft: #1d3a2a;
