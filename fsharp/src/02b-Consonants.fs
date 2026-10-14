@@ -381,8 +381,8 @@ module private Timing =
     let leadNone = 0.03
     let leadAlone = 0.04 // voice before a tap pressed on its own
     let afterAlone = 0.04
-    let close = 0.05 // articulators moving into position
-    let opening = 0.05 // and out again
+    let close = 0.07 // articulators moving into position
+    let opening = 0.07 // and out again
     let stopHold = 0.12 // closure of a stop
     let fricativeHold = 0.24
     let nasalHold = 0.22
@@ -390,6 +390,8 @@ module private Timing =
     let trillHold = 0.3
     let tapClosure = 0.018
     let burst = 0.014
+    let burstRise = 0.008 // how long the gap of a stop takes to rise to the burst opening at the release
+    let openVoiced = 0.09 // how long the gap of a voiced stop takes to open after the release
     let fricationStop = 0.04 // how long the gap of a voiceless stop stays narrow enough to hiss after the release
     let votPlain = 0.025 // voice onset time of a plain voiceless stop
     let votAspirated = 0.07
@@ -628,7 +630,7 @@ let private burstLevel (index: float) : float =
 // the noise (most at the tongue tip, least at the back) to be heard at about the recordings' level.
 let private voicedBurstLevel (index: float) : float =
     curve
-        [ (13.5, 1.5); (24.5, 2.0); (29.5, 3.0); (33.0, 4.9); (39.0, 4.9); (40.0, 6.0); (42.0, 8.0); (43.5, 10.0) ]
+        [ (13.5, 0.45); (24.5, 0.6); (29.5, 0.9); (33.0, 1.47); (39.0, 1.47); (40.0, 1.8); (42.0, 2.4); (43.5, 3.0) ]
         index
 
 // ### Stops
@@ -675,20 +677,28 @@ let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline 
         let burst = (if voiced then voicedBurstLevel else burstLevel) (c0Of spec).Index
         // A voiced release is quick (the voice carries on through it). A voiceless one lets the gap widen
         // slowly: for about 35 ms it stays narrow enough to hiss, then it is the breath of the aspiration.
-        let frication = if voiced then Timing.burst else Timing.fricationStop
+        // A voiced release opens the gap in a glide of its own, as the closure does: the recordings take about
+        // 90 ms to open, and what tells a `d` from a `b` or a `ɡ` is the formants sweeping through that time. A
+        // voiceless one lets the gap widen slowly: for about 35 ms it stays narrow enough to hiss, then it is
+        // the breath of the aspiration.
+        let opened = if voiced then releaseAt + (Timing.openVoiced * tr) else releaseAt + (Timing.fricationStop * tr) + 0.012
         let built =
             tl
             |> glide closeAt closure
             |> Timeline.at releaseAt id
-            |> Timeline.at (releaseAt + 0.004) (fun f -> { f with C0d = 0.38; C0n = burst; NoiseHz = burstHz })
+            // The gap first rises to the burst opening in a few ms (a jump would click), with the noise.
+            |> glide (releaseAt + Timing.burstRise) (fun f -> { f with C0d = 0.38; C0n = burst; NoiseHz = burstHz })
             |> (fun tl2 ->
-                if voiced then tl2
-                else tl2 |> Timeline.at (releaseAt + frication * 0.5) (fun f -> { f with C0d = 0.55; C0n = burst * 0.5 }))
-            |> Timeline.at (releaseAt + frication) (fun f -> { f with C0d = 1.2; C0n = (if voiced then burst / 2.0 else burst * 0.2) })
-            |> Timeline.at (releaseAt + frication + 0.012) (fun f -> { f with C0d = 3.0; C0n = 0.0 })
-            |> Timeline.at (releaseAt + frication + 0.012) (fun f -> { f with Aspiration = breath; C0d = 3.0 })
-            |> Timeline.at (releaseAt + frication + 0.012 + vot) (fun f -> { f with Aspiration = 0.0; Intensity = (if x.WithVowel then 1.0 else 0.0); Tenseness = 0.6 })
-            |> Timeline.at (releaseAt + frication + 0.012 + vot + after) id
+                if voiced then
+                    tl2 |> glide opened (fun f -> { f with C0d = 3.0; C0n = 0.0 })
+                else
+                    tl2
+                    |> Timeline.at (releaseAt + (Timing.fricationStop * tr) * 0.5) (fun f -> { f with C0d = 0.55; C0n = burst * 0.5 })
+                    |> Timeline.at (releaseAt + (Timing.fricationStop * tr)) (fun f -> { f with C0d = 1.2; C0n = burst * 0.2 })
+                    |> Timeline.at opened (fun f -> { f with C0d = 3.0; C0n = 0.0 }))
+            |> Timeline.at opened (fun f -> { f with Aspiration = breath; C0d = 3.0 })
+            |> Timeline.at (opened + vot) (fun f -> { f with Aspiration = 0.0; Intensity = (if x.WithVowel then 1.0 else 0.0); Tenseness = 0.6 })
+            |> Timeline.at (opened + vot + after) id
         (built, { Start = closeAt; End = releaseAt })
 
 // ### Affricates

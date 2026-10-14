@@ -169,7 +169,7 @@ test('a stop on its own is only its release: no vowel follows', () => {
     const r = play(symbol);
     const end = r.g.score.keyframes.at(-1).t;
     assert.ok(rms(slice(r.samples, end - 0.02, end)) < 0.002, `${symbol} ends silent`);
-    assert.ok(r.g.score.keyframes.every((k) => k.t < r.g.hold.end + 0.2), `${symbol} has no long tail`);
+    assert.ok(r.g.score.keyframes.every((k) => k.t < r.g.hold.end + 0.3), `${symbol} has no long tail`);
   }
 });
 

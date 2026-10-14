@@ -268,8 +268,8 @@ let gestureTests =
             Expect.isTrue (close (span.End - span.Start) 0.2) "held for 0.2 s"
             let careful = (gesture (find "s")).Hold.Value
             let quick = (gestureWith { defaultOptions with TransitionScale = 0.5 } (find "s")).Hold.Value
-            Expect.isTrue (close (careful.Start - 0.03) 0.05) "careful: 50 ms to close"
-            Expect.isTrue (close (quick.Start - 0.03) 0.025) "quick: half of that"
+            Expect.isTrue (close (careful.Start - 0.03) 0.07) "careful: 70 ms to close"
+            Expect.isTrue (close (quick.Start - 0.03) 0.035) "quick: half of that"
         }
 
         test "pitch is the voice's pitch" {
