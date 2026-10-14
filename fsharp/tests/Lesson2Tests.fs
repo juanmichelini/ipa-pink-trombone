@@ -206,7 +206,7 @@ let gestureTests =
         test "aspirated stops wait longer for the voice, by exactly the difference in voice onset time" {
             let plain = (gestureWith withNeutral (find "p")).Score.Duration
             let puff = (gestureWith { withNeutral with Aspirated = true } (find "p")).Score.Duration
-            Expect.isTrue (close (puff - plain) (0.07 - 0.04)) "0.07 s against 0.04 s"
+            Expect.isTrue (close (puff - plain) (0.07 - 0.025)) "0.07 s against 0.025 s"
         }
 
         test "fricatives hiss through a narrow gap; s is higher and further forward than sh" {

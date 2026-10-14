@@ -176,7 +176,13 @@ type Glottis =
       mutable VibPhase: float
       mutable Freq: float
       mutable Lf: Lf
-      mutable Loudness: float }
+      mutable Loudness: float
+      mutable Tilt: float
+      TiltCoef: float }
+
+/// The voice is rolled off above this by a one-pole low-pass, as real voices are: the recordings fall about
+/// 17 dB between 4 and 8 kHz, the bare LF source about 11.
+let voiceTiltHz = 2200.0
 
 let private loudnessOf (tenseness: float) : float = Math.Pow(clamp tenseness 0.02 1.0, 0.25)
 
@@ -194,7 +200,9 @@ let makeGlottis (sampleRate: float) (rng: Rng) : Glottis =
       VibPhase = 0.0
       Freq = 140.0
       Lf = lfParameters 0.6
-      Loudness = loudnessOf 0.6 }
+      Loudness = loudnessOf 0.6
+      Tilt = 0.0
+      TiltCoef = 1.0 - Math.Exp((-2.0 * Math.PI * voiceTiltHz) / sampleRate) }
 
 // The waveform is recomputed at the start of every period, so a change of tenseness takes effect
 // at the next cycle and never in the middle of one.
@@ -220,7 +228,8 @@ let step (g: Glottis) (noise: float) : float =
     if g.Phase >= 1.0 then
         g.Phase <- g.Phase - 1.0
         setupWaveform g
-    let voiced = waveform g.Lf g.Phase * g.Intensity * g.Loudness
+    g.Tilt <- g.Tilt + g.TiltCoef * (waveform g.Lf g.Phase * g.Intensity * g.Loudness - g.Tilt)
+    let voiced = g.Tilt
     let breath =
         (g.Aspiration + g.Intensity * (1.0 - Math.Sqrt(clamp g.Tenseness 0.0 1.0))) * noiseModulator g
     voiced + breath * noise * 0.2
