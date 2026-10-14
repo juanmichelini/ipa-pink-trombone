@@ -125,7 +125,7 @@ type Tract =
 
 let private glottalReflection = 0.75
 let private lipReflection = -0.85
-let private wallLoss = 0.999
+let private wallLoss = 0.997
 
 let private copyInto (source: float[]) (target: float[]) : unit =
     for i in 0 .. source.Length - 1 do
