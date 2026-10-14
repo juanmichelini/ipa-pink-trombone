@@ -1,20 +1,12 @@
-# speaking-head
+# 🗣️ Speaking Head
 
 **A talking head you can type to.** Type or click IPA symbols, or a word in one of ten languages, and watch a
 simulated vocal tract (tongue, jaw, lips, soft palate) make the sound, in a chosen voice, tempo and accent.
 
-*Formerly `ipa-pink-trombone`.* The project started as a set of experiments around [Pink Trombone](https://dood.al/pinktrombone/)
-by Neil Thapen, the delightful browser vocal-tract synthesizer. Pink Trombone shows that a one-dimensional waveguide
-model of the throat is enough to make convincing vowels if you move the tongue, lips and velum well. This project
-grew past that: consonants as points in a place-and-degree space, an IPA planner, a word-to-IPA dictionary for ten
-languages, voices, rhythm and accents, a pure F# core that mirrors the JavaScript, and a workflow for checking the
-sound against real recordings. It no longer has much to do with a vowel toy, hence the new name. The question it
-asks is still *where should you move the mouth for a given IPA symbol, in a given language, voice, tempo and accent?*
-
-The synthesis engine is an independent implementation of the same family of techniques as Pink Trombone
-(a Kelly-Lochbaum waveguide tract plus an LF-style glottal source). It is not a copy of Pink Trombone's code, and
-it has since gone its own way: a voice rolled off like a real one, damped tract walls, and a fricative filter, all
-tuned against recordings (see below).
+The question it asks is *where should you move the mouth for a given IPA symbol, in a given language, voice, tempo
+and accent?* Vowels are points on the vowel chart, consonants are points in a place-and-degree space, an IPA planner
+joins them, a dictionary turns words of ten languages into IPA, and voices, rhythm and accents shape the result. The
+sound is checked against real recordings (see below), and a pure F# core mirrors the JavaScript.
 
 ## The experiments
 
@@ -84,6 +76,14 @@ type, a function from a tongue to its sound and one back again; lesson 2 adds co
 lessons are in [`fsharp/`](fsharp/) and read like the JavaScript source, for example
 `/literate/?src=fsharp/src/01-TongueSpace.fs`. [Fable](https://fable.io) compiles them to JavaScript when the site is deployed (nothing to build to just read
 them or to run the JavaScript demos). See [`fsharp/README.md`](fsharp/README.md).
+
+## See also
+
+- [**Pink Trombone**](https://dood.al/pinktrombone/) by Neil Thapen, the browser vocal-tract synthesizer this project
+  started from (it was called `ipa-pink-trombone`). It shows that a one-dimensional waveguide model of the throat is
+  enough for convincing vowels. The engine here is an independent implementation of the same family of techniques
+  (a Kelly-Lochbaum waveguide tract plus an LF-style glottal source), not a copy of its code, and has since gone its
+  own way: a voice rolled off like a real one, damped tract walls, a fricative filter, all tuned against recordings.
 
 ## How work happens
 
