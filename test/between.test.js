@@ -75,3 +75,16 @@ test('through a shut or narrow gap the voice is tensed and carries some breath, 
   const first = consonantGesture(consonantBySymbol('m'), { carrier }).score.keyframes[0];
   assert.ok(first.tenseness < 0.7 && first.aspiration === 0, 'the vowel around it is ordinary');
 });
+
+test('the burst of a coronal stop is not brighter than the recordings (about 3 kHz, not 5 to 6)', () => {
+  // The release peels back along the blade, so the noise is made further from the lips than the closure was.
+  for (const v of ['a', 'i']) {
+    for (const symbol of ['d', 't']) {
+      const g = betweenVowels(consonantBySymbol(symbol), { carrier: shapeOfSymbol(v) });
+      const x = renderScore(g.score);
+      const at = g.holds[0].end, seg = x.slice(Math.round(at * RATE), Math.round((at + 0.03) * RATE));
+      const mid = bandEnergy(seg, RATE, 1500, 4500), high = bandEnergy(seg, RATE, 4500, 12000);
+      assert.ok(mid > high, `${symbol} after ${v}: ${(10 * Math.log10(mid / high)).toFixed(1)} dB between the 1.5-4.5 and 4.5-12 kHz bands`);
+    }
+  }
+});
