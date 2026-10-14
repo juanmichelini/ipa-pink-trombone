@@ -1,14 +1,20 @@
-# ipa-pink-trombone
+# speaking-head
 
-**IPA to mouth lessons.** Type or click IPA symbols and watch a simulated vocal tract make the sound.
+**A talking head you can type to.** Type or click IPA symbols, or a word in one of ten languages, and watch a
+simulated vocal tract (tongue, jaw, lips, soft palate) make the sound, in a chosen voice, tempo and accent.
 
-This project is **inspired by [Pink Trombone](https://dood.al/pinktrombone/)** by Neil Thapen, the delightful
-browser vocal-tract synthesizer. Pink Trombone shows that a one-dimensional waveguide model of the throat is enough to
-make convincing vowels and consonants if you move the tongue, lips and velum well. Here we ask the next question:
-*where should you move them for a given IPA symbol, in a given language, voice, tempo and accent?*
+*Formerly `ipa-pink-trombone`.* The project started as a set of experiments around [Pink Trombone](https://dood.al/pinktrombone/)
+by Neil Thapen, the delightful browser vocal-tract synthesizer. Pink Trombone shows that a one-dimensional waveguide
+model of the throat is enough to make convincing vowels if you move the tongue, lips and velum well. This project
+grew past that: consonants as points in a place-and-degree space, an IPA planner, a word-to-IPA dictionary for ten
+languages, voices, rhythm and accents, a pure F# core that mirrors the JavaScript, and a workflow for checking the
+sound against real recordings. It no longer has much to do with a vowel toy, hence the new name. The question it
+asks is still *where should you move the mouth for a given IPA symbol, in a given language, voice, tempo and accent?*
 
-The synthesis engine in this repo is an independent implementation of the same family of techniques
-(a Kelly-Lochbaum waveguide tract plus an LF-style glottal source). It is not a copy of Pink Trombone's code.
+The synthesis engine is an independent implementation of the same family of techniques as Pink Trombone
+(a Kelly-Lochbaum waveguide tract plus an LF-style glottal source). It is not a copy of Pink Trombone's code, and
+it has since gone its own way: a voice rolled off like a real one, damped tract walls, and a fricative filter, all
+tuned against recordings (see below).
 
 ## The experiments
 
@@ -28,6 +34,21 @@ share one library in [`lib/`](lib/).
 
 **All eight experiments are live.** They have been checked numerically and by smoke tests, but a human ear and a
 real-browser pass are still the best next contribution; see "Status" in the plan.
+
+## Checked against real speech
+
+The consonants are calibrated against the [Wikipedia IPA chart with audio](https://en.wikipedia.org/wiki/IPA_consonant_chart_with_audio),
+one Wikimedia Commons recording per sound. They are downloaded for local analysis only (never committed, licences
+recorded), and each consonant is rendered as the same "a C a C a" and compared with its recording: duration, level
+against the vowel, voice and hiss, spectral centroid, and spectrograms side by side.
+
+```sh
+node scripts/fetch-reference.mjs            # downloads the recordings into ref/ (needs ffmpeg)
+node scripts/compare-consonants.mjs --png   # table, plus spectrograms and contact sheets in out/compare/
+```
+
+In the consonants demo, choosing a vowel in "between vowels" plays exactly that "a C a C a", so what you hear can be
+held up against the wiki clip. Details are in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 Status and design notes live in [`docs/PLAN.md`](docs/PLAN.md). Progress lives in
 [issues](../../issues) and [pull requests](../../pulls).
