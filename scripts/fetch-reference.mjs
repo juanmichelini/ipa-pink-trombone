@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const REF = join(ROOT, 'ref');
-const UA = 'ipa-pink-trombone-reference/1.0 (https://github.com/juanmichelini/ipa-pink-trombone; local analysis only)';
+const UA = 'speaking-head-reference/1.0 (https://github.com/juanmichelini/speaking-head; local analysis only)';
 const PAGE = 'IPA_consonant_chart_with_audio';
 
 async function getJson(url) {

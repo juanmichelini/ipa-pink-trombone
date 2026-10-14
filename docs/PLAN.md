@@ -1,7 +1,8 @@
 # Plan
 
-Goal: a series of incremental, dynamic experiments that map IPA to a Pink-Trombone-style vocal tract, growing from a
-single vowel chart to accents. All experiments coexist in one repo and share one library.
+Goal: a speaking head. A series of incremental, dynamic experiments that map IPA to a simulated vocal tract (its engine
+began as a Pink-Trombone-style waveguide), growing from a single vowel chart to accents, and checked against real
+recordings. All experiments coexist in one repo and share one library.
 
 ## Principles
 
