@@ -184,7 +184,7 @@ let placeIndex (place: Place) : float option =
     | Uvular -> Some 19.5
     | Pharyngeal -> Some 13.5
     | Glottal -> None
-    | AlveoloPalatal -> Some 35.5
+    | AlveoloPalatal -> Some 30.5
     | LabialVelar -> Some 43.5
     | LabialPalatal -> Some 43.5
 
@@ -333,6 +333,35 @@ let private specOf (c: Consonant) : Spec =
           C1 = None
           Hz = (match position with Some i -> hissPitch i | None -> 1000.0) }
 
+// ## Moving into and out of a constriction
+//
+// A tube's formants only move once its gap is small, so a gap that shrinks in equal steps of width does
+// nearly all of its acoustic moving in the last few milliseconds: the sound drops out in a click. The
+// recordings glide for 50 ms or more on either side of a consonant. So `glide` takes the gap
+// *geometrically* (the same ratio every step), and everything else in a straight line, which spreads the
+// movement over the whole transition. It adds a few keyframes between the last one and `t`.
+let private glideSteps = 4
+let private gapFloor = 0.02
+
+let private glide (t: float) (change: Change) (timeline: Timeline) : Timeline =
+    let from = timeline.Current
+    let target = change from
+    let last = (List.head timeline.Keys).T
+    let gap (a: float) (b: float) (u: float) : float =
+        if a = b then a else (max a gapFloor) * ((max b gapFloor / max a gapFloor) ** u)
+    let stepped =
+        [ 1 .. glideSteps - 1 ]
+        |> List.fold
+            (fun (tl: Timeline) i ->
+                let u = float i / float glideSteps
+                tl
+                |> Timeline.at (last + (t - last) * u) (fun _ ->
+                    { blend u from target with
+                        C0d = gap from.C0d target.C0d u
+                        C1d = gap from.C1d target.C1d u }))
+            timeline
+    stepped |> Timeline.at t (fun _ -> target)
+
 // ## Timings
 //
 // In seconds; about right for careful speech.
@@ -350,7 +379,8 @@ module private Timing =
     let trillHold = 0.3
     let tapClosure = 0.018
     let burst = 0.014
-    let votPlain = 0.04 // voice onset time of a plain voiceless stop
+    let fricationStop = 0.04 // how long the gap of a voiceless stop stays narrow enough to hiss after the release
+    let votPlain = 0.025 // voice onset time of a plain voiceless stop
     let votAspirated = 0.07
     let affricateFrication = 0.1
     let afterCarrier = 0.16
@@ -516,9 +546,9 @@ let private continuant (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Tim
     let tail = if x.WithVowel then Timing.afterCarrier else 0.03
     let built =
         tl
-        |> Timeline.at closeAt target
+        |> glide closeAt target
         |> Timeline.at holdEnd id
-        |> Timeline.at (holdEnd + (Timing.opening * tr)) back
+        |> glide (holdEnd + (Timing.opening * tr)) back
         |> Timeline.at (holdEnd + (Timing.opening * tr) + tail) id
     (built, { Start = closeAt; End = holdEnd })
 
@@ -535,8 +565,8 @@ let private trill (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline
         fun f ->
             { f with
                 C0i = (c0Of spec).Index
-                C0d = 0.2
-                C0m = 0.35
+                C0d = 0.35
+                C0m = 0.3
                 C0mHz = (if c.Place = Uvular then 30.0 else 25.0)
                 C0n = 0.15
                 Intensity = 1.0 }
@@ -551,7 +581,7 @@ let private trill (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline
     let tail = if x.WithVowel then Timing.afterCarrier else 0.03
     let built =
         tl
-        |> Timeline.at closeAt flutter
+        |> glide closeAt flutter
         |> Timeline.at holdEnd id
         |> Timeline.at (holdEnd + (Timing.opening * tr)) still
         |> Timeline.at (holdEnd + (Timing.opening * tr) + tail) id
@@ -628,16 +658,22 @@ let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline 
         let breath = if voiced then 0.0 elif o.Aspirated then 0.9 else 2.0
         let after = if x.WithVowel then Timing.afterCarrier else Timing.afterNone
         let burst = (if voiced then voicedBurstLevel else burstLevel) (c0Of spec).Index
+        // A voiced release is quick (the voice carries on through it). A voiceless one lets the gap widen
+        // slowly: for about 35 ms it stays narrow enough to hiss, then it is the breath of the aspiration.
+        let frication = if voiced then Timing.burst else Timing.fricationStop
         let built =
             tl
-            |> Timeline.at closeAt closure
+            |> glide closeAt closure
             |> Timeline.at releaseAt id
             |> Timeline.at (releaseAt + 0.004) (fun f -> { f with C0d = 0.38; C0n = burst; NoiseHz = burstHz })
-            |> Timeline.at (releaseAt + Timing.burst) (fun f -> { f with C0d = 1.2; C0n = burst / 2.0 })
-            |> Timeline.at (releaseAt + Timing.burst + 0.012) (fun f -> { f with C0d = 3.0; C0n = 0.0 })
-            |> Timeline.at (releaseAt + Timing.burst + 0.012) (fun f -> { f with Aspiration = breath; C0d = 3.0 })
-            |> Timeline.at (releaseAt + Timing.burst + 0.012 + vot) (fun f -> { f with Aspiration = 0.0; Intensity = (if x.WithVowel then 1.0 else 0.0); Tenseness = 0.6 })
-            |> Timeline.at (releaseAt + Timing.burst + 0.012 + vot + after) id
+            |> (fun tl2 ->
+                if voiced then tl2
+                else tl2 |> Timeline.at (releaseAt + frication * 0.5) (fun f -> { f with C0d = 0.55; C0n = burst * 0.5 }))
+            |> Timeline.at (releaseAt + frication) (fun f -> { f with C0d = 1.2; C0n = (if voiced then burst / 2.0 else burst * 0.2) })
+            |> Timeline.at (releaseAt + frication + 0.012) (fun f -> { f with C0d = 3.0; C0n = 0.0 })
+            |> Timeline.at (releaseAt + frication + 0.012) (fun f -> { f with Aspiration = breath; C0d = 3.0 })
+            |> Timeline.at (releaseAt + frication + 0.012 + vot) (fun f -> { f with Aspiration = 0.0; Intensity = (if x.WithVowel then 1.0 else 0.0); Tenseness = 0.6 })
+            |> Timeline.at (releaseAt + frication + 0.012 + vot + after) id
         (built, { Start = closeAt; End = releaseAt })
 
 // ### Affricates
@@ -655,7 +691,7 @@ let private affricate (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Time
     let released = releaseAt + 0.006 + Timing.affricateFrication + (Timing.opening * tr)
     let built =
         tl
-        |> Timeline.at closeAt (fun f ->
+        |> glide closeAt (fun f ->
             { f with
                 C0i = k.Index
                 C0d = (if voiced then leak k.Index else seal)
@@ -682,7 +718,7 @@ let private tap (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline =
     let closed = at + 0.022
     tl
     |> Timeline.at (at + 0.012) (fun f -> { f with C0i = (c0Of spec).Index; C0d = 3.0 })
-    |> Timeline.at closed (fun f -> { f with C0d = 0.0; Intensity = 0.8 })
+    |> Timeline.at closed (fun f -> { f with C0d = seal; Intensity = 0.8 })
     |> Timeline.at (closed + Timing.tapClosure) id
     |> Timeline.at (closed + Timing.tapClosure + 0.012) (fun f -> { f with C0d = 3.0; Intensity = 1.0 })
     |> Timeline.at (closed + Timing.tapClosure + 0.012 + (if x.Alone then Timing.afterAlone else Timing.afterCarrier)) id

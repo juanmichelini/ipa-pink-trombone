@@ -28,7 +28,8 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CONSONANTS, consonantBySymbol, consonantGesture } from '../lib/consonants.js';
+import { CONSONANTS, consonantBySymbol } from '../lib/consonants.js';
+import { betweenVowels } from '../lib/between.js';
 import { shapeOfSymbol } from '../lib/vowel-map.js';
 import { renderScore } from '../lib/render.js';
 import { readWav, stft, db, band, encodePng, ramp } from './dsp.mjs';
@@ -147,6 +148,8 @@ export function measure(an, inst) {
     voice: floor(pct(fs.map((x) => db(band(x.p, S.binHz, ...VOICE_BAND))), 0.5) - inst.vowel),
     hiss: floor(pct(fs.map((x) => x.high), 0.9) - inst.vowel),
     cent: NaN, peak: NaN,
+    // The spectrum of the consonant: mean power in each of the coarse bands, in dB re the vowel.
+    profile: EDGES.slice(1).map((_, k) => floor(db(fs.reduce((sum, x) => sum + Math.pow(10, x.bands[k] / 10), 0) / fs.length) - inst.vowel)),
   };
   // The hiss spectrum: average of the frames where the noise is within 12 dB of its loudest.
   const hmax = Math.max(...fs.map((x) => x.high));
@@ -170,23 +173,27 @@ export function measure(an, inst) {
 const finite = (xs) => xs.filter(Number.isFinite);
 const mean = (xs) => { const v = finite(xs); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : NaN; };
 
-// `known` is a time range `{ start, end }` to use if no consonant is found by listening (our own
-// render knows where its consonant is; a sound that never leaves the "a" shape is reported with `*`).
+// `known` is a list of time ranges `{ start, end }` where our own render knows its consonants are. An
+// instance found by listening counts only if it lies on one of them; a range with nothing found on it
+// (a sound too like the vowel to be told from it by band shape) is measured as it stands and the row
+// is marked `*`.
 export function summarise(samples, rate, known = null) {
   const an = instances(samples, rate);
   let guessed = false;
-  // Only the instances that lie on the known consonant count; a sound too like the vowel to be told
-  // from it by ear (or by band shape) falls back to the known range.
   if (known) {
-    an.list = an.list.filter((i) => Math.min(i.t1, known.end) - Math.max(i.t0, known.start) > 0.5 * (i.t1 - i.t0));
-    const found = an.list.reduce((sum, i) => sum + (i.t1 - i.t0), 0);
-    if (found < 0.5 * (known.end - known.start)) an.list = [];
-  }
-  if (!an.list.length && known) {
-    const a = Math.round(known.start / an.hop), b = Math.min(an.f.length - 1, Math.round(known.end / an.hop));
-    const t = Math.max(...an.f.map((x) => x.tot));
-    an.list.push({ a, b, t0: known.start, t1: known.end, vowel: t });
-    guessed = true;
+    const overlap = (i, k) => Math.min(i.t1, k.end) - Math.max(i.t0, k.start);
+    an.list = an.list.filter((i) => known.some((k) => overlap(i, k) > 0.5 * (i.t1 - i.t0)));
+    const top = Math.max(...an.f.map((x) => x.tot));
+    for (const k of known) {
+      const found = an.list.filter((i) => overlap(i, k) > 0).reduce((sum, i) => sum + Math.min(i.t1, k.end) - Math.max(i.t0, k.start), 0);
+      if (found >= 0.5 * (k.end - k.start)) continue;
+      an.list = an.list.filter((i) => overlap(i, k) <= 0);
+      const a = Math.round(k.start / an.hop), b = Math.min(an.f.length - 1, Math.round(k.end / an.hop));
+      const around = an.list.length ? an.list.reduce((sum, i) => sum + i.vowel, 0) / an.list.length : top;
+      an.list.push({ a, b, t0: k.start, t1: k.end, vowel: around, edge: false });
+      guessed = true;
+    }
+    an.list.sort((x, y) => x.t0 - y.t0);
   }
   const ms = an.list.map((i) => measure(an, i));
   const keys = ['dur', 'lvl', 'voice', 'hiss', 'cent', 'peak'];
@@ -194,8 +201,12 @@ export function summarise(samples, rate, known = null) {
   // between two vowels (or, for a hiss that only has a vowel on one side, the shortest of those).
   const between = ms.filter((_, i) => !an.list[i].edge);
   const dur = Math.min(...(between.length ? between : ms).map((m) => m.dur));
-  return { an, n: ms.length, guessed, ...Object.fromEntries(keys.map((k) => [k, mean(ms.map((m) => m[k]))])), dur: Number.isFinite(dur) ? dur : NaN };
+  const profile = EDGES.slice(1).map((_, k) => mean(ms.map((m) => m.profile[k])));
+  return { an, n: ms.length, guessed, profile, ...Object.fromEntries(keys.map((k) => [k, mean(ms.map((m) => m[k]))])), dur: Number.isFinite(dur) ? dur : NaN };
 }
+
+// How far apart two consonants sound, as the RMS difference in dB between their band spectra.
+export const timbreDistance = (p, q) => Math.sqrt(p.reduce((s, x, k) => s + (x - q[k]) ** 2, 0) / p.length);
 
 // ## Which recording is which consonant
 //
@@ -212,56 +223,77 @@ function referenceFile(sym) {
 }
 
 // ## Spectrograms side by side
-const WINDOW = 0.9, PX_HOP = 110, PX_SIZE = 512, ROWS = 232;   // 0.9 s, 2.5 ms per column, 0 to 10 kHz
-function panel(samples, rate, centre) {
+//
+// The recording on the left and ours (`a C a C a`) on the right, on the same scales, lined up so that the
+// first consonant is at the same distance from the left edge. White ticks: every kHz up the side, every
+// 100 ms along the bottom.
+const WINDOW = 1.5, PX_HOP = 220, PX_SIZE = 512, ROWS = 232, MS_PER_COL = (PX_HOP / 44100) * 1000;
+function panel(samples, rate, start) {
   const S = stft(samples, rate, PX_SIZE, PX_HOP);
-  const cols = Math.round((WINDOW * rate) / PX_HOP), first = Math.round(((centre - WINDOW / 2) * rate) / PX_HOP);
+  const cols = Math.round((WINDOW * rate) / PX_HOP), first = Math.round((Math.max(0, start) * rate) / PX_HOP);
   const at = (c) => S.power[first + c];
   let top = -1e9;
   for (let c = 0; c < cols; c++) if (at(c)) for (let k = 0; k < ROWS; k++) top = Math.max(top, db(at(c)[k]));
   return { cols, at, top, S };
 }
 
-function writePng(file, ref, mine) {
-  const GAP = 8, W = ref.cols * 2 + GAP, H = ROWS + 10;
-  const img = Buffer.alloc(W * H * 3, 0);
-  const put = (x, y, [r, g, b]) => { const o = (y * W + x) * 3; img[o] = r; img[o + 1] = g; img[o + 2] = b; };
+// One row of the image: recording on the left, ours on the right, starting `y0` rows down.
+function drawPair(img, W, y0, ref, mine) {
+  const GAP = 8;
+  const put = (x, y, [r, g, b]) => { const o = ((y0 + y) * W + x) * 3; img[o] = r; img[o + 1] = g; img[o + 2] = b; };
   [[ref, 0], [mine, ref.cols + GAP]].forEach(([p, x0]) => {
     for (let c = 0; c < p.cols; c++) {
       const col = p.at(c);
       for (let y = 0; y < ROWS; y++) put(x0 + c, y, col ? ramp((db(col[ROWS - 1 - y]) - p.top + 70) / 70) : [0, 0, 0]);
     }
-    for (let k = 1; k <= 9; k++) for (let x = 0; x < 5; x++) put(x0 + x, ROWS - Math.round((k * 1000) / (p.S.binHz)), [255, 255, 255]);   // every kHz
-    for (let ms = 0; ms <= 900; ms += 100) for (let y = 0; y < 6; y++) put(x0 + Math.min(p.cols - 1, Math.round(ms / 2.5)), ROWS + 2 + y, [255, 255, 255]);   // every 100 ms
+    for (let k = 1; k <= 9; k++) for (let x = 0; x < 5; x++) put(x0 + x, ROWS - Math.round((k * 1000) / (p.S.binHz)), [255, 255, 255]);
+    for (let ms = 0; ms < WINDOW * 1000; ms += 100) for (let y = 0; y < 6; y++) put(x0 + Math.min(p.cols - 1, Math.round(ms / MS_PER_COL)), ROWS + 2 + y, [255, 255, 255]);
   });
-  writeFileSync(file, encodePng(W, H, img));
+}
+const ROW_H = ROWS + 12;
+const widthOf = (ref) => ref.cols * 2 + 8;
+
+function writePng(file, pairs) {
+  const W = widthOf(pairs[0][0]);
+  const img = Buffer.alloc(W * ROW_H * pairs.length * 3, 0);
+  pairs.forEach(([ref, mine], i) => drawPair(img, W, i * ROW_H, ref, mine));
+  writeFileSync(file, encodePng(W, ROW_H * pairs.length, img));
 }
 
 // ## Main
 const pad = (s, n) => String(s).padEnd(n), num = (x, d = 0) => (Number.isFinite(x) ? x.toFixed(d) : '-');
 const pair = (a, b, d = 0, w = 15) => pad(`${num(a, d)} → ${num(b, d)}`, w);
 const carrier = shapeOfSymbol('a');
+const LEAD_IN = 0.35;   // s of context to show before the first consonant in the images
 const symbols = wanted.length ? wanted : CONSONANTS.map((c) => c.symbol);
 if (flags.has('--png')) mkdirSync(OUT, { recursive: true });
-const rows = [], missing = [];
-console.log(`${pad('sym', 6)}${pad('n', 5)}${pad('dur ms', 15)}${pad('lvl dB', 15)}${pad('voice dB', 15)}${pad('hiss dB', 15)}${pad('voice-hiss', 15)}${pad('centroid Hz', 15)}peak Hz      (reference → ours)`);
+const rows = [], missing = [], sheet = [];
+console.log(`${pad('sym', 6)}${pad('n', 5)}${pad('dur ms', 15)}${pad('lvl dB', 15)}${pad('voice dB', 15)}${pad('hiss dB', 15)}${pad('voice-hiss', 15)}${pad('centroid Hz', 15)}peak Hz        spectrum   (reference → ours; spectrum = dB apart)`);
 for (const sym of symbols) {
   const c = consonantBySymbol(sym);
   const file = c && referenceFile(sym);
   if (!file) { missing.push(sym); continue; }
   const r = readWav(file);
-  const g = consonantGesture(c, { carrier });
+  const g = betweenVowels(c, { carrier });
   const mineSamples = renderScore(g.score);
-  const a = summarise(r.samples, r.rate), b = summarise(mineSamples, 44100, g.hold ? { start: g.hold.start, end: g.hold.end } : g.core);
-  const row = { sym, a, b };
+  const a = summarise(r.samples, r.rate), b = summarise(mineSamples, 44100, g.holds.every(Boolean) ? g.holds : g.cores);
+  const row = { sym, a, b, spec: timbreDistance(a.profile, b.profile) };
   rows.push(row);
-  console.log(`${pad(sym, 6)}${pad(`${a.n}/${b.n}${b.guessed ? '*' : ''}`, 5)}${pair(a.dur, b.dur)}${pair(a.lvl, b.lvl, 1)}${pair(a.voice, b.voice, 1)}${pair(a.hiss, b.hiss, 1)}${pair(a.voice - a.hiss, b.voice - b.hiss, 1)}${pair(a.cent, b.cent, 0, 15)}${num(a.peak)} → ${num(b.peak)}`);
+  console.log(`${pad(sym, 6)}${pad(`${a.n}/${b.n}${b.guessed ? '*' : ''}`, 5)}${pair(a.dur, b.dur)}${pair(a.lvl, b.lvl, 1)}${pair(a.voice, b.voice, 1)}${pair(a.hiss, b.hiss, 1)}${pair(a.voice - a.hiss, b.voice - b.hiss, 1)}${pair(a.cent, b.cent, 0, 15)}${pad(`${num(a.peak)} → ${num(b.peak)}`, 15)}${num(row.spec, 1)}`);
   if (flags.has('--debug')) for (const [who, s] of [['ref', a], ['ours', b]]) console.log(`      ${who}: vowels ${s.an.vowels.join(' ')} | consonants ${s.an.list.map((i) => `${i.t0.toFixed(2)}–${i.t1.toFixed(2)}s`).join('  ')}`);
   if (flags.has('--png')) {
-    // Show the last instance of the recording (an "aCa" with a vowel on each side) and ours.
-    const ia = a.an.list.at(-1) || { t0: 0, t1: 0 }, ib = b.an.list.at(-1) || { t0: 0, t1: 0 };
-    writePng(join(OUT, `${sym}.png`), panel(r.samples, r.rate, (ia.t0 + ia.t1) / 2), panel(mineSamples, 44100, (ib.t0 + ib.t1) / 2));
+    const ia = a.an.list[0] || { t0: LEAD_IN }, ib = b.an.list[0] || { t0: LEAD_IN };
+    const pair = [panel(r.samples, r.rate, ia.t0 - LEAD_IN), panel(mineSamples, 44100, ib.t0 - LEAD_IN)];
+    writePng(join(OUT, `${sym}.png`), [pair]);
+    sheet.push([sym, pair]);
   }
+}
+// With --png: every consonant too, six to an image (`sheet-1.png`, ...), in the order of the table.
+const PER_SHEET = 6;
+for (let i = 0; i < sheet.length; i += PER_SHEET) {
+  const part = sheet.slice(i, i + PER_SHEET);
+  writePng(join(OUT, `sheet-${i / PER_SHEET + 1}.png`), part.map(([, pair]) => pair));
+  console.log(`sheet-${i / PER_SHEET + 1}.png: ${part.map(([sym]) => sym).join(' ')}`);
 }
 if (missing.length) console.log(`\nno recording for: ${missing.join(' ')}`);
 
@@ -272,11 +304,14 @@ for (const [k, unit] of gaps) {
   const d = rows.map((r) => [r.sym, r.b[k] - r.a[k]]).filter(([, x]) => Number.isFinite(x)).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1])).slice(0, 6);
   console.log(`  ${pad(k, 6)}${d.map(([s, x]) => `${s} ${x > 0 ? '+' : ''}${x.toFixed(k === 'dur' ? 0 : 1)}${unit}`).join('   ')}`);
 }
+const far = [...rows].sort((x, y) => y.spec - x.spec);
+console.log(`\nfurthest from their recordings by spectrum (dB apart): ${far.slice(0, 14).map((r) => `${r.sym} ${r.spec.toFixed(1)}`).join('  ')}`);
+console.log(`mean spectrum distance ${mean(rows.map((r) => r.spec)).toFixed(1)} dB`);
 const mad = (k) => mean(rows.map((r) => Math.abs(r.b[k] - r.a[k])));
 console.log(`\nmean |ours - reference| over ${rows.length} consonants: dur ${mad('dur').toFixed(0)} ms, lvl ${mad('lvl').toFixed(1)} dB, voice ${mad('voice').toFixed(1)} dB, hiss ${mad('hiss').toFixed(1)} dB, centroid x${Math.exp(mean(rows.map((r) => Math.abs(Math.log(r.b.cent / r.a.cent))))).toFixed(2)}`);
 const ratio = rows.map((r) => [r.sym, r.b.cent / r.a.cent]).filter(([, x]) => Number.isFinite(x)).sort((x, y) => Math.abs(Math.log(y[1])) - Math.abs(Math.log(x[1]))).slice(0, 6);
 console.log(`  ${pad('cent', 6)}${ratio.map(([s, x]) => `${s} ×${x.toFixed(2)}`).join('   ')}`);
 if (rows.length) {
   mkdirSync(OUT, { recursive: true });
-  writeFileSync(join(OUT, 'summary.tsv'), ['sym\tmeasure\treference\tours', ...rows.flatMap((r) => ['dur', 'lvl', 'voice', 'hiss', 'cent', 'peak'].map((k) => `${r.sym}\t${k}\t${r.a[k]}\t${r.b[k]}`))].join('\n') + '\n');
+  writeFileSync(join(OUT, 'summary.tsv'), ['sym\tmeasure\treference\tours', ...rows.flatMap((r) => [...['dur', 'lvl', 'voice', 'hiss', 'cent', 'peak'].map((k) => `${r.sym}\t${k}\t${r.a[k]}\t${r.b[k]}`), ...r.a.profile.map((v, k) => `${r.sym}\tband${k}\t${v}\t${r.b.profile[k]}`)])].join('\n') + '\n');
 }

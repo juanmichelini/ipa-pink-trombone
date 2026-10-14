@@ -11,10 +11,14 @@
 // - **Transient** sounds (stops, affricates, taps, trills) cannot be held without changing what
 //   they are, so the whole gesture plays once.
 //
-// With "between vowels" chosen, the gesture is wrapped in the same vowel on both sides, because
-// most consonants are heard by what they do to the vowels next to them.
+// With "between vowels" chosen, the consonant is played the way the reference recordings of the IPA
+// chart have it: a vowel, the consonant, the vowel, the consonant, the vowel ("a C a C a"), at natural
+// speed, because most consonants are heard by what they do to the vowels next to them. That makes each
+// press comparable one to one with the Wikipedia recordings, which `scripts/compare-consonants.mjs`
+// measures. With no vowel, a press is stretched five times so each phase can be heard on its own.
 import { CONSONANTS, consonantBySymbol, consonantGesture, NOT_MODELLED } from '../../lib/consonants.js';
 import { concatScores, scaleTime, DEFAULT_FRAME } from '../../lib/score.js';
+import { betweenVowels } from '../../lib/between.js';
 import { shapeOfSymbol } from '../../lib/vowel-map.js';
 import { shapeOf } from '../../lib/tractshape.js';
 import { drawTract } from '../../lib/ui/tractview.js';
@@ -62,9 +66,11 @@ async function press(symbol) {
   held = symbol;
   if (playing) playing.cancel();
   const g = gestureOf(symbol);
-  // A single press lasts five times as long as the gesture's natural length, so each phase of it
-  // (closure, burst, release, glide) can be heard on its own.
-  const score = scaleTime(g.score, SINGLE_PRESS_STRETCH);
+  // Between vowels: "a C a C a" at natural speed. Alone: five times as long as the gesture's natural
+  // length, so each phase of it (closure, burst, release, glide) can be heard on its own.
+  const score = state.carrier === 'none'
+    ? scaleTime(g.score, SINGLE_PRESS_STRETCH)
+    : betweenVowels(consonantBySymbol(symbol), { f0: state.f0, carrier: carrierShape(), aspirated: state.aspirated }).score;
   lastScore = score;
   try { synth = await synthHolder.get(); } catch (error) { $('status').textContent = t('common.audioError', { message: error.message }); return; }
   if (held !== symbol && g.kind === 'continuant') return; // let go before audio was ready
