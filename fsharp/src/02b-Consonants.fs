@@ -630,8 +630,16 @@ let private burstLevel (index: float) : float =
 // the noise (most at the tongue tip, least at the back) to be heard at about the recordings' level.
 let private voicedBurstLevel (index: float) : float =
     curve
-        [ (13.5, 0.45); (24.5, 0.6); (29.5, 0.9); (33.0, 1.47); (39.0, 1.47); (40.0, 1.8); (42.0, 2.4); (43.5, 3.0) ]
+        [ (13.5, 0.18); (24.5, 0.24); (29.5, 0.36); (33.0, 0.588); (39.0, 0.588); (40.0, 0.72); (42.0, 0.96); (43.5, 1.2) ]
         index
+
+// A tongue-tip release does not open at one point: it peels away from the ridge backward along the blade,
+// so the noise is made further back than the closure was, with a longer front cavity in front of it and so
+// a lower pitch. Left at the closure, the burst of a `d` rings at 5 to 6 kHz in a front cavity of 2 cm and
+// reads as a different consonant; the recordings have it near 3 kHz. The slide, in index units, is a curve
+// of the place: the coronals (blade and tip) slide, the lips and the back of the tongue do not.
+let private releaseSlide (index: float) : float =
+    curve [ (30.0, 0.0); (34.0, 5.5); (40.5, 5.5); (42.5, 0.0) ] index
 
 // ### Stops
 //
@@ -687,7 +695,7 @@ let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline 
             |> glide closeAt closure
             |> Timeline.at releaseAt id
             // The gap first rises to the burst opening in a few ms (a jump would click), with the noise.
-            |> glide (releaseAt + Timing.burstRise) (fun f -> { f with C0d = 0.38; C0n = burst; NoiseHz = burstHz })
+            |> glide (releaseAt + Timing.burstRise) (fun f -> { f with C0i = (c0Of spec).Index - releaseSlide (c0Of spec).Index; C0d = 0.38; C0n = burst; NoiseHz = burstHz })
             |> (fun tl2 ->
                 if voiced then
                     tl2 |> glide opened (fun f -> { f with C0d = 3.0; C0n = 0.0 })
