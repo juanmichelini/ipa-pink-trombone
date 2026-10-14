@@ -62,3 +62,16 @@ test('trills and taps flutter without popping at every beat', () => {
     assert.ok(g.score.keyframes.every((k) => k.c0d > 0.001), `${symbol} never seals completely`);
   }
 });
+
+test('through a shut or narrow gap the voice is tensed and carries some breath, in a vowel it does not', () => {
+  const steady = (symbol) => consonantGesture(consonantBySymbol(symbol), { carrier }).steady;
+  for (const symbol of ['m', 'n', 'l']) {
+    const f = steady(symbol);
+    assert.equal(f.tenseness, 1, `${symbol} is tensed`);
+    assert.ok(f.aspiration > 0.3, `${symbol} has breath`);
+  }
+  const j = steady('j');
+  assert.ok(j.tenseness < 0.7 && j.aspiration > 0, 'a glide keeps an ordinary voice, with some breath');
+  const first = consonantGesture(consonantBySymbol('m'), { carrier }).score.keyframes[0];
+  assert.ok(first.tenseness < 0.7 && first.aspiration === 0, 'the vowel around it is ordinary');
+});

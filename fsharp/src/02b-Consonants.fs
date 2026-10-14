@@ -264,6 +264,17 @@ let degreeLateral = 0.32
 let voiceGain (hiss: float) (gap: float) : float =
     if hiss > 0.0 then 0.12 else curve [ (0.9, 0.15); (1.5, 1.0) ] gap
 
+/// How tense the voice is, as a function of the gap. Through a gap that is shut or nearly shut (a nasal, a
+/// lateral) a voice has lost most of its upper harmonics; the recordings keep them, as if the folds closed
+/// harder, so the voice is tensed to the most (1) there and left alone (0.6) from a gap of 0.5.
+let tension (gap: float) : float = curve [ (0.4, 1.0); (0.5, 0.6) ] gap
+
+/// A little breath in the voice through a narrow gap. A voice squeezed through a shut or narrow passage
+/// carries turbulence at the mid and high frequencies that the passage otherwise stops: without it a nasal
+/// or a glide is a hum, and with it the recordings' bands above 1 kHz come back. It is full (0.5) where the
+/// voice is quietest (a gap under 0.9) and gone at a gap of 1.5, like `voiceGain`.
+let breath (gap: float) : float = curve [ (0.9, 0.5); (1.5, 0.0) ] gap
+
 let private constriction (index: float) (gap: float) : Constriction =
     { Index = index; Diameter = gap; Noise = (if gap < 0.6 then hissLevel index else 0.0) }
 
@@ -529,6 +540,10 @@ let private continuant (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Tim
                       let alone = if not x.WithVowel && hiss = 0.0 && c.Voiced then 1.0 else voicing
                       { f with Intensity = alone })
                   (fun f -> if hiss > 0.0 && c.Voiced then { f with Tenseness = 0.45 } else f)
+                  (fun f ->
+                      match spec.C0 with
+                      | Some k when c.Voiced && hiss = 0.0 -> { f with Tenseness = tension k.Diameter; Aspiration = breath k.Diameter }
+                      | _ -> f)
                   (fun f -> if c.Symbol = "ʍ" then { f with Lips = 0.6 } else f)
                   (fun f -> if c.Symbol = "w" || c.Symbol = "ɥ" then { f with Lips = 0.55 } else f) ]
     let back : Change =

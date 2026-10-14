@@ -149,7 +149,7 @@ export function measure(an, inst) {
     hiss: floor(pct(fs.map((x) => x.high), 0.9) - inst.vowel),
     cent: NaN, peak: NaN,
     // The spectrum of the consonant: mean power in each of the coarse bands, in dB re the vowel.
-    profile: EDGES.slice(1).map((_, k) => floor(db(fs.reduce((sum, x) => sum + Math.pow(10, x.bands[k] / 10), 0) / fs.length) - inst.vowel)),
+    profile: EDGES.slice(1).map((_, k) => Math.max(-65, db(fs.reduce((sum, x) => sum + Math.pow(10, x.bands[k] / 10), 0) / fs.length) - inst.vowel)),
   };
   // The hiss spectrum: average of the frames where the noise is within 12 dB of its loudest.
   const hmax = Math.max(...fs.map((x) => x.high));
