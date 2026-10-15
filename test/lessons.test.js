@@ -121,3 +121,28 @@ test('only the vowels of the lesson can be snapped to', () => {
   const near = interpret(...at(0, 0), { list: rounded, lockRounded: 1 });
   assert.notEqual(near.symbol, 'i', 'i is not a rounded vowel');
 });
+
+// ## A voiced fricative is one buzzy sound, not a buzz beside a hiss
+
+// How strongly the envelope of the hiss (the sound above 2 kHz, found with the second difference) rises and
+// falls at the pitch: the amplitude of that one frequency in the envelope, over the envelope's mean.
+function pitchModulation(samples, rate, f0) {
+  const hiss = new Float64Array(samples.length);
+  for (let i = 2; i < samples.length; i++) hiss[i] = Math.abs(samples[i] - 2 * samples[i - 1] + samples[i - 2]);
+  const n = hiss.length;
+  let mean = 0, re = 0, im = 0;
+  for (let i = 0; i < n; i++) mean += hiss[i] / n;
+  for (let i = 0; i < n; i++) { const a = (2 * Math.PI * f0 * i) / rate; re += hiss[i] * Math.cos(a); im += hiss[i] * Math.sin(a); }
+  return (2 * Math.hypot(re, im)) / n / mean;
+}
+
+test('the hiss of a voiced fricative pulses with the pitch, and the hiss of a voiceless one does not', () => {
+  const held = (symbol) => {
+    const f = consonantGesture(CONSONANTS.find((c) => c.symbol === symbol), { f0: 130 }).steady;
+    return renderScore({ keyframes: [{ t: 0, ...f }, { t: 1, ...f }], duration: 1 }, { tail: 0 }).slice(8820);
+  };
+  for (const [voiceless, voiced] of [['s', 'z'], ['ʃ', 'ʒ'], ['f', 'v'], ['x', 'ɣ']]) {
+    const plain = pitchModulation(held(voiceless), 44100, 130), buzzy = pitchModulation(held(voiced), 44100, 130);
+    assert.ok(buzzy > 1.6 * plain, `${voiced} pulses ${buzzy.toFixed(2)} against ${plain.toFixed(2)} for ${voiceless}`);
+  }
+});

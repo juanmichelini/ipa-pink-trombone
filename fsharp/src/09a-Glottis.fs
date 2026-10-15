@@ -217,6 +217,19 @@ let noiseModulator (g: Glottis) : float =
     let v = g.Tenseness * g.Intensity
     v * voiced + (1.0 - v) * 0.3
 
+// The hiss of a fricative is chopped by the voice more deeply than breath is. With the voice on, the flow
+// through the gap follows the glottal cycle, so the hiss comes in bursts at the pitch, and the buzz and the
+// hiss fuse into one buzzy sound (in the recordings, a `z` is modulated about 2.3 times as much as an `s`).
+// Whether the folds vibrate matters, not how loudly: a voiced fricative's voice is quiet, yet its hiss
+// pulses fully. With the voice off the hiss is steady. It swings between 0.12 and 0.32 of its full amount
+// through each cycle (against a steady 0.3 with the voice off), which puts the pulsing at about twice an
+// unvoiced hiss's, as in the recordings, and the hiss of a voiced fricative about 4 dB under a voiceless
+// one's, as there.
+let frictionModulator (g: Glottis) : float =
+    let voicing = Math.Min(1.0, g.Intensity / 0.1)
+    let pulse = 0.12 + 0.2 * Math.Max(0.0, Math.Sin(2.0 * Math.PI * g.Phase))
+    voicing * pulse + (1.0 - voicing) * 0.3
+
 // One sample of source. `noise` is band-limited breath noise from the caller. The pitch wobbles by
 // the vibrato (a slow sine) and the jitter (a little randomness each sample).
 let step (g: Glottis) (noise: float) : float =
