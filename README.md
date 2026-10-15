@@ -24,6 +24,17 @@ share one library in [`lib/`](lib/).
 | 7 | Rhythm | Stress-timed vs syllable-timed |
 | 8 | Accents | Rewrite rules applied to the IPA before it is sounded |
 
+Lessons 1 and 2 are the two with the most to take in, so each is first taken **one dimension at a time**, in steps
+that lead up to it:
+
+- **1.1 to 1.4, vowels:** first the tongue sliding front to back at one height with the lips spread (`i ɨ ɯ`), then the
+  same with the lips rounded (`y ʉ u`), then all the spread vowels with the height free as well, then all the rounded
+  ones; then lesson 1 is the full chart.
+- **2.1 to 2.9, consonants:** one manner and one voicing at a time (voiceless fricatives, voiced fricatives,
+  voiceless stops, voiced stops, nasals, approximants, laterals, trills and taps, affricates), with only the **place**
+  free: a line from the lips to the throat that you press and slide along, hearing every place between the named ones;
+  then lesson 2 is the full table.
+
 **All eight experiments are live.** They have been checked numerically and by smoke tests, but a human ear and a
 real-browser pass are still the best next contribution; see "Status" in the plan.
 

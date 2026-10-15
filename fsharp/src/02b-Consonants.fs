@@ -48,6 +48,9 @@ type Place =
     | AlveoloPalatal
     | LabialVelar
     | LabialPalatal
+    /// Made at any place along the tract, not only a named one: the index runs from 13.5 (the throat) to
+    /// 43.5 (the lips). The step-by-step lessons slide along the places with it.
+    | At of float
 
 type Manner =
     | Plosive
@@ -66,6 +69,10 @@ type Consonant =
       Place: Place
       Manner: Manner
       Voiced: bool }
+
+/// A consonant of a manner and a voicing made at any place along the tract. It has no IPA symbol.
+let consonantAt (manner: Manner) (voiced: bool) (index: float) : Consonant =
+    { Symbol = ""; Place = At index; Manner = manner; Voiced = voiced }
 
 // ## The inventory
 //
@@ -187,6 +194,7 @@ let placeIndex (place: Place) : float option =
     | AlveoloPalatal -> Some 30.5
     | LabialVelar -> Some 43.5
     | LabialPalatal -> Some 43.5
+    | At index -> Some index
 
 // ## How each sound is made
 //
@@ -335,7 +343,11 @@ let private specOf (c: Consonant) : Spec =
             { Index = index; Diameter = gap; Noise = 0.0 }
         match Map.tryFind c.Symbol approximants with
         | Some (first, second) -> { C0 = Some (resolve first); C1 = Option.map resolve second; Hz = 1000.0 }
-        | None -> { C0 = None; C1 = None; Hz = 1000.0 }
+        | None ->
+            // An approximant at no named place is a plain narrowing there, too wide to hiss.
+            (match c.Place with
+             | At index -> { C0 = Some { Index = index; Diameter = 0.6; Noise = 0.0 }; C1 = None; Hz = 1000.0 }
+             | _ -> { C0 = None; C1 = None; Hz = 1000.0 })
     | Trill
     | Tap
     | Nasal
@@ -584,7 +596,7 @@ let private trill (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline
                 C0i = (c0Of spec).Index
                 C0d = 0.35
                 C0m = 0.3
-                C0mHz = (if c.Place = Uvular then 30.0 else 25.0)
+                C0mHz = (if c.Place = Uvular || (match c.Place with At i -> i < 22.0 | _ -> false) then 30.0 else 25.0)
                 C0n = 0.15
                 Intensity = 1.0 }
     let still : Change =

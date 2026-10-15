@@ -224,6 +224,18 @@ let gestureTests =
             Expect.equal (steadyOf "z").Intensity 0.12 "z is voiced, with the voice well under the hiss"
         }
 
+        test "a consonant at any place along the tract is made at that place" {
+            for index in [ 14.0; 24.5; 31.7; 39.0; 43.5 ] do
+                let held = (gesture (consonantAt Fricative false index)).Steady.Value
+                Expect.equal held.C0i index (sprintf "a fricative at %.1f" index)
+                Expect.isTrue (held.C0n > 0.0) "and it hisses"
+            let stop = (gesture (consonantAt Plosive true 31.7)).Steady.Value
+            Expect.equal stop.C0i 31.7 "a stop closes there"
+            let glide = (gesture (consonantAt Approximant true 31.7)).Steady.Value
+            Expect.equal glide.C0i 31.7 "an approximant narrows there"
+            Expect.isTrue (glide.C0d > 0.5 && glide.C0n = 0.0) "too wide to hiss"
+        }
+
         test "nasals close the mouth and open the nose" {
             for symbol in [ "m"; "n"; "ŋ"; "ɲ" ] do
                 let f = steadyOf symbol

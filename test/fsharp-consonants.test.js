@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { CONSONANTS, consonantGesture } from '../lib/consonants.js';
+import { CONSONANTS, consonantGesture, consonantAt } from '../lib/consonants.js';
 import { frameAt, normalizeScore, scaleTime } from '../lib/score.js';
 
 // Lesson 2 rebuilt `lib/consonants.js` and `lib/score.js` in F#. The demos still run on the
@@ -96,6 +96,30 @@ for (const [name, options] of cases) {
     }
   });
 }
+
+// The step-by-step lessons slide a consonant along the places, so a consonant at *any* place must be the
+// same in both.
+test('a consonant at any place along the tract matches the JavaScript', { skip }, () => {
+  const compiled = Array.from(fs.consonants);
+  const mannerOf = (manner) => compiled.find((c) => squash(c.Manner.name) === squash(manner)).Manner;
+  for (const manner of ['fricative', 'plosive', 'nasal', 'approximant', 'lateral approximant', 'lateral fricative', 'trill', 'tap', 'affricate']) {
+    for (const voiced of [false, true]) {
+      for (const index of [14, 19.5, 24.5, 31.7, 37, 39, 41, 43.5]) {
+        for (const [name, options] of cases.slice(0, 3)) {
+          const js = consonantGesture(consonantAt(manner, voiced, index), options);
+          const g = fs.gestureWith(compiledOptions(options), fs.consonantAt(mannerOf(manner), voiced, index));
+          const what = `${voiced ? 'voiced' : 'voiceless'} ${manner} at ${index} ${name}`;
+          const keys = Array.from(g.Score.Keyframes);
+          assert.equal(keys.length, js.score.keyframes.length, `${what}: keyframe count`);
+          keys.forEach((k, i) => {
+            near(k.T, js.score.keyframes[i].t, `${what} key ${i} time`);
+            sameFrame(js.score.keyframes[i], k.Frame, `${what} key ${i}`);
+          });
+        }
+      }
+    }
+  }
+});
 
 test('frameAt and scaleTime agree with score.js on real gestures', { skip }, () => {
   for (const symbol of ['p', 's', 'm', 'r', 't͡ʃ', 'ɾ', 'w']) {
