@@ -6,6 +6,8 @@ import { shapeOfSymbol } from '../lib/vowel-map.js';
 import { VOWELS } from '../lib/vowels.js';
 import { indexToX, xToIndex, stack, nearestSymbol, labelled, namedPlaces, AXIS } from '../lib/ui/placeaxis.js';
 import { slice } from '../lib/ui/consonant-lesson.js';
+import { placeIndexOf } from '../lib/ui/placeaxis.js';
+import { consonantBySymbol } from '../lib/consonants.js';
 import { interpret, toPixels } from '../lib/ui/vowelchart.js';
 import { chartPosition } from '../lib/vowels.js';
 
@@ -77,6 +79,13 @@ test('a slice is every consonant of a manner and a voicing, with the glottal one
   assert.deepEqual(slice('nasal', true).extras, []);
   for (const [manner, voiced] of [['trill', true], ['tap', true], ['affricate', false], ['affricate', true], ['lateral approximant', true], ['lateral fricative', false]]) {
     assert.ok(slice(manner, voiced).symbols.length >= 1, `${manner}`);
+  }
+});
+
+test('the buttons under the line are in the order of the line, from the lips to the throat', () => {
+  for (const [manner, voiced] of [['fricative', false], ['fricative', true], ['plosive', false], ['plosive', true], ['nasal', true], ['approximant', true], ['affricate', false], ['affricate', true], ['trill', true], ['tap', true]]) {
+    const places = slice(manner, voiced).symbols.map((symbol) => placeIndexOf(consonantBySymbol(symbol).place));
+    assert.deepEqual(places, [...places].sort((a, b) => b - a), `${voiced ? 'voiced' : 'voiceless'} ${manner}`);
   }
 });
 
