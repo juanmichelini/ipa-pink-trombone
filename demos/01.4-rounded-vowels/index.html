@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>1.4 · Rounded vowels · 🗣️ Speaking Head</title>
+<meta content="Every vowel with rounded lips: move the tongue forward and back, up and down." data-i18n-attr="content:demo.1.4.blurb" name="description"/>
+<link href="/css/site.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="top">
+<a href="/"><strong>🗣️ Speaking Head</strong></a>
+<span>1.4 · <span data-i18n="demo.1.4.title">Rounded vowels</span></span>
+<a data-i18n="d01.a3" href="/literate/?src=fsharp/src/01-TongueSpace.fs">Read the lesson (F#)</a>
+<a href="/literate/?src=fsharp/src/09c-Render.fs">Read the engine (F#)</a>
+<a data-i18n="d01.a2" href="/literate/?src=lib/vowel-map.js">Read the mapping</a>
+<a data-i18n="d01.a1" href="/literate/?src=lib/ui/vowel-lesson.js">Read this demo's source</a>
+</nav>
+<h1 data-i18n="demo.1.4.title">Rounded vowels</h1>
+<p data-i18n="lesson.1.4.intro">The same two freedoms with the lips held rounded: the vowels that sit on the right of each pair on the full chart.</p>
+<div class="demo-grid">
+<section aria-label="Vowel chart" class="panel" data-i18n-attr="aria-label:d01.attr1">
+<div id="chart"></div>
+<p class="note" data-i18n="d01.p3" style="margin-bottom:.4rem">Keyboard and touch friendly: hold any of these.</p>
+<div class="vowel-buttons" id="buttons"></div>
+</section>
+<section aria-label="Vocal tract" class="panel" data-i18n-attr="aria-label:d01.attr2">
+<canvas aria-label="Side view of the vocal tract" height="620" id="tract" width="560"></canvas>
+<p aria-live="polite" class="readout" data-i18n="d01.p4" id="readout" role="status">Press the chart to begin.</p>
+</section>
+</div>
+<section class="panel">
+<div class="row">
+<label><span data-i18n="d01.t2">Pitch</span> <input id="pitch" max="1" min="0" step="0.001" type="range" value="0.3"/> <output id="pitchOut"></output></label>
+<label><span data-i18n="d01.t3">Voice</span> <input id="tenseness" max="1" min="0.1" step="0.01" type="range" value="0.6"/> <output id="tensenessOut"></output></label>
+</div>
+<div class="row" style="margin-top:.8rem">
+<button class="primary" data-i18n="lesson.playThese" id="playThese">Play these vowels</button>
+<button data-i18n="d01.button3" id="stop">Stop</button>
+<button data-i18n="d01.button4" id="download">Download WAV</button>
+</div>
+<p class="note" id="status"></p>
+</section>
+<script src="/demos/01.4-rounded-vowels/main.js" type="module"></script>
+<script src="/lib/ui/lessonnav.js" type="module"></script>
+</body>
+</html>

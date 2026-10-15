@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>2.9 · Affricates · 🗣️ Speaking Head</title>
+<meta content="A stop released into a fricative." data-i18n-attr="content:demo.2.9.blurb" name="description"/>
+<link href="/css/site.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="top">
+<a href="/"><strong>🗣️ Speaking Head</strong></a>
+<span>2.9 · <span data-i18n="demo.2.9.title">Affricates</span></span>
+<a data-i18n="d01.a3" href="/literate/?src=fsharp/src/02b-Consonants.fs">Read the lesson (F#)</a>
+<a data-i18n="d01.a1" href="/literate/?src=lib/ui/consonant-lesson.js">Read this demo's source</a>
+<a data-i18n="d01.a2" href="/literate/?src=lib/consonants.js">Read the mapping</a>
+</nav>
+<h1 data-i18n="demo.2.9.title">Affricates</h1>
+<p data-i18n="lesson.2.9.intro">A stop released into a fricative: the closure of 2.3 followed by the hiss of 2.1. Slide to choose where it is made.</p>
+<div class="demo-grid">
+<section aria-label="Place of articulation" class="panel" data-i18n-attr="aria-label:lesson.axis.attr">
+<div class="row" id="variants" style="margin-bottom:.6rem"></div>
+<div id="axis"></div>
+<p class="note" data-i18n="lesson.axis.hint" style="margin-bottom:.4rem">Press the line and slide. Hold a symbol to hear exactly that one.</p>
+<div class="vowel-buttons" id="buttons"></div>
+</section>
+<section aria-label="Vocal tract" class="panel" data-i18n-attr="aria-label:d01.attr2">
+<canvas aria-label="Side view of the vocal tract" height="620" id="tract" width="560"></canvas>
+<p aria-live="polite" class="readout" data-i18n="d02.p3" id="readout" role="status">Press a symbol to begin.</p>
+</section>
+</div>
+<section class="panel">
+<div class="row">
+<label><span data-i18n="d02.t1">Between vowels</span> <select id="carrier">
+<option data-i18n="d02.option1" value="none" selected>none (consonant alone)</option>
+<option value="a">a _ a</option>
+<option value="i">i _ i</option>
+<option value="u">u _ u</option>
+</select>
+</label>
+<label><span data-i18n="d01.t2">Pitch</span> <input id="pitch" max="1" min="0" step="0.001" type="range" value="0.3"/> <output id="pitchOut"></output></label>
+</div>
+<div class="row" style="margin-top:.8rem">
+<button data-i18n="d01.button3" id="stop">Stop</button>
+<button data-i18n="d01.button4" id="download">Download WAV</button>
+</div>
+<p class="note" id="status"></p>
+</section>
+<script src="/demos/02.9-affricates/main.js" type="module"></script>
+<script src="/lib/ui/lessonnav.js" type="module"></script>
+</body>
+</html>

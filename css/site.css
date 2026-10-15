@@ -93,6 +93,7 @@ svg.vowel-chart { width: 100%; max-width: 30rem; height: auto; touch-action: non
 .chart-dot { fill: var(--muted); }
 .chart-symbol { font: 22px var(--ipa); fill: var(--ink); }
 .chart-symbol.active { fill: var(--accent); font-weight: 700; }
+.chart-row { stroke: var(--accent); stroke-width: 2; opacity: .55; }
 .chart-caption { font: 12px var(--serif); fill: var(--muted); font-style: italic; }
 .chart-cursor { fill: none; stroke: var(--tongue); stroke-width: 2.5; pointer-events: none; }
 .demo-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); align-items: start; }
@@ -148,3 +149,12 @@ footer.lang { margin: 2.5rem 0 0; text-align: center; font: .9rem var(--serif); 
 
 /* The tagline under the name on the home page. */
 .tagline { margin: -0.6rem 0 1rem; font-size: 1.15rem; color: var(--muted); }
+
+/* The place axis of the consonant lessons: the same kind of picture as the vowel chart. */
+.place-axis { width: 100%; height: auto; touch-action: none; cursor: pointer; }
+.axis-line { stroke: var(--accent); stroke-width: 2; opacity: .6; }
+.axis-tick { stroke: var(--muted); stroke-width: 1; }
+
+/* The steps under a lesson's card on the home page. */
+.steps { margin: .35rem .2rem 0; font-size: .85rem; color: var(--muted); }
+.steps a { margin-inline-end: .35rem; }

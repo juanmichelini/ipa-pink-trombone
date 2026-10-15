@@ -3,6 +3,14 @@
 Goal: a speaking head. A series of incremental, dynamic experiments that map IPA to a simulated vocal tract, growing
 from a single vowel chart to accents, and checked against real recordings. All experiments coexist in one repo and share one library.
 
+## Lessons and steps
+
+A lesson with a lot in it (1 Vowels, 2 Consonants) is preceded by *steps* that take one dimension at a time
+(1.1 to 1.4, 2.1 to 2.9). A step is a row in `lib/demos.js` with a `parent`, a folder under `demos/` with a page and a
+tiny `main.js`, and strings in every catalogue. The instruments are shared: `lib/ui/vowel-lesson.js` (the vowel chart
+with a filter and locks) and `lib/ui/consonant-lesson.js` (a slice of the table and a line of places,
+`lib/ui/placeaxis.js`), each also used by the full lesson.
+
 ## Principles
 
 - **Issues and PRs only.** Each experiment is an issue; each issue is one PR.
