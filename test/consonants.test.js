@@ -207,3 +207,23 @@ test('a release is a burst of hiss of about the same size at every place', () =>
   const levels = ['p', 't', 'k', 'q'].map(burst);
   assert.ok(Math.max(...levels) / Math.min(...levels) < 12, `bursts range over ${levels.map((x) => x.toFixed(4)).join(', ')}`);
 });
+
+// A voiced fricative is a hiss that pulses with the voice. How much the hiss swells and fades at the
+// voice's pitch (the depth of its envelope at f0, relative to its mean) tells it from a hum under a
+// steady hiss.
+test('the hiss of a voiced fricative pulses at the pitch of the voice, a voiceless one does not', () => {
+  const depth = (symbol) => {
+    const { g, samples } = play(symbol, { carrier: null, f0: 130 });
+    const seg = samples.slice(Math.floor((g.hold.start + 0.05) * RATE), Math.floor(g.hold.end * RATE));
+    const env = [];
+    for (let i = 2; i < seg.length; i++) env.push(Math.abs(seg[i] - 2 * seg[i - 1] + seg[i - 2]));
+    const mean = env.reduce((a, b) => a + b, 0) / env.length;
+    let re = 0, im = 0;
+    env.forEach((e, i) => { const a = (2 * Math.PI * 130 * i) / RATE; re += e * Math.cos(a); im += e * Math.sin(a); });
+    return (2 * Math.hypot(re, im)) / env.length / mean;
+  };
+  for (const [voiceless, voiced] of [['s', 'z'], ['ʃ', 'ʒ'], ['f', 'v'], ['x', 'ɣ'], ['θ', 'ð']]) {
+    assert.ok(depth(voiceless) < 0.15, `${voiceless} is steady (${depth(voiceless).toFixed(2)})`);
+    assert.ok(depth(voiced) > 0.3, `${voiced} pulses (${depth(voiced).toFixed(2)})`);
+  }
+});

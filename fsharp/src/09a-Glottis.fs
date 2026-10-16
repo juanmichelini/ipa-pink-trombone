@@ -214,7 +214,9 @@ let setupWaveform (g: Glottis) : unit =
 // so breath and fricative noise are modulated by the glottal cycle. With the voice off it is steady.
 let noiseModulator (g: Glottis) : float =
     let voiced = 0.1 + 0.2 * Math.Max(0.0, Math.Sin(2.0 * Math.PI * g.Phase))
-    let v = g.Tenseness * g.Intensity
+    // How far the voice is on, as opposed to how loud it is: a voice at a tenth of its loudness is still
+    // a voice, and still pulses the noise (a voiced fricative is a pulsing hiss, not a hum under a steady one).
+    let v = g.Tenseness * Math.Min(1.0, g.Intensity * 10.0)
     v * voiced + (1.0 - v) * 0.3
 
 // One sample of source. `noise` is band-limited breath noise from the caller. The pitch wobbles by

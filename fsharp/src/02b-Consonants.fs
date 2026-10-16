@@ -553,7 +553,7 @@ let private continuant (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Tim
                       // ... and a nasal or glide gets the full voice, so every sound held alone is about as loud.
                       let alone = if not x.WithVowel && hiss = 0.0 && c.Voiced then 1.0 else voicing
                       { f with Intensity = alone })
-                  (fun f -> if hiss > 0.0 && c.Voiced then { f with Tenseness = 0.45 } else f)
+                  (fun f -> if hiss > 0.0 && c.Voiced then { f with Tenseness = 0.9 } else f)
                   (fun f ->
                       match spec.C0 with
                       | Some k when c.Voiced && hiss = 0.0 -> { f with Tenseness = tension k.Diameter; Aspiration = breath k.Diameter }
