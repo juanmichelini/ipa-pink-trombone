@@ -5,6 +5,6 @@
 import { slice, startConsonantLesson } from '../../lib/ui/consonant-lesson.js';
 
 startConsonantLesson({
-  carrier: 'a',
+  carrier: 'none',
   variants: [slice('plosive', false)],
 });
