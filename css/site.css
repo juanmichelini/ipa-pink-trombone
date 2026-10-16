@@ -151,7 +151,8 @@ footer.lang { margin: 2.5rem 0 0; text-align: center; font: .9rem var(--serif); 
 .tagline { margin: -0.6rem 0 1rem; font-size: 1.15rem; color: var(--muted); }
 
 /* The place axis of the consonant lessons: the same kind of picture as the vowel chart. */
-.place-axis { width: 100%; height: auto; touch-action: none; cursor: pointer; }
+.place-axis { width: 100%; height: auto; touch-action: none; cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.place-axis text { -webkit-user-select: none; user-select: none; }
 .axis-line { stroke: var(--accent); stroke-width: 2; opacity: .6; }
 .axis-tick { stroke: var(--muted); stroke-width: 1; }
 
