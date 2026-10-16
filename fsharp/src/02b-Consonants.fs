@@ -394,6 +394,7 @@ module private Timing =
     let quickLead = 0.005 // a voiceless stop on its own: the closure is silent, so it is kept short
     let quickClose = 0.02
     let quickHold = 0.02
+    let quickHoldVoiced = 0.04 // a little longer for a voiced one, so its murmur is heard as voice
     let leadAlone = 0.04 // voice before a tap pressed on its own
     let afterAlone = 0.04
     let close = 0.07 // articulators moving into position
@@ -497,7 +498,7 @@ type private Ctx =
       WithVowel: bool
       /// A tap pressed on its own: it gets a breath of voice either side, not a whole vowel.
       Alone: bool
-      /// A voiceless stop pressed on its own: silent while shut, so quick (see `aloneBurst`).
+      /// A stop pressed on its own: nothing to hear while shut, so quick.
       Quick: bool
       Lead: float
       Base: Frame }
@@ -679,7 +680,7 @@ let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline 
     let o = x.Opts
     let tr = o.TransitionScale
     let closeAt = x.Lead + (if x.Quick then Timing.quickClose else Timing.close * tr)
-    let releaseAt = closeAt + (Option.defaultValue (if x.Quick then Timing.quickHold else Timing.stopHold) o.HoldFor)
+    let releaseAt = closeAt + (Option.defaultValue (if x.Quick then (if c.Voiced then Timing.quickHoldVoiced else Timing.quickHold) else Timing.stopHold) o.HoldFor)
     if c.Symbol = "ʔ" then
         let built =
             tl
@@ -821,9 +822,9 @@ let gestureWith (options: Options) (c: Consonant) : Gesture =
             NoiseHz = 1000.0 }
         |> carrier
     let alone = (kind = Kind.Tap) && Option.isNone options.Carrier
-    // A voiceless stop pressed on its own is silent while it is shut, so it is made as quick as the recordings'
-    // stops, and the press is the release, not a wait for it.
-    let quick = (kind = Kind.Stop) && Option.isNone options.Carrier && not c.Voiced && c.Symbol <> "ʔ"
+    // A stop pressed on its own has nothing to hear while it is shut (a voiceless one is silent, a voiced one
+    // only murmurs), so it is made as quick as the recordings' stops, and the press is the release.
+    let quick = (kind = Kind.Stop) && Option.isNone options.Carrier && c.Symbol <> "ʔ"
     let lead = if alone then Timing.leadAlone elif withVowel then Timing.leadCarrier elif quick then Timing.quickLead else Timing.leadNone
     let spec = specOf c
     let ctx = { Opts = options; WithVowel = withVowel; Alone = alone; Quick = quick; Lead = lead; Base = baseFrame }
