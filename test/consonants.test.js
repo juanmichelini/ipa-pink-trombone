@@ -234,3 +234,15 @@ test('between vowels a voiceless stop keeps its closure', () => {
   const between = consonantGesture(consonantBySymbol('t'), { carrier: { tongueIndex: 20, tongueDiameter: 3, lips: 1.5 } });
   assert.ok((between.hold.end - between.hold.start) > (alone.hold.end - alone.hold.start) * 3);
 });
+
+test('a voiced stop pressed on its own is just as quick, and about as loud as an s', () => {
+  const s = (() => { const { samples } = play('s', { carrier: null }); return Math.max(...samples.map(Math.abs)); })();
+  for (const symbol of ['b', 'd', 'ɡ', 'ɢ', 'ɖ', 'ɟ']) {
+    const { g, samples } = play(symbol, { carrier: null });
+    let pk = 0, at = 0;
+    samples.forEach((v, i) => { if (Math.abs(v) > pk) { pk = Math.abs(v); at = i; } });
+    assert.ok(at / RATE < 0.15, `${symbol}: loudest at ${(at / RATE).toFixed(3)} s`);
+    assert.ok(pk > 0.8 * s && pk < 1.6 * s, `${symbol}: peak ${pk.toFixed(2)} against s ${s.toFixed(2)}`);
+    assert.ok(g.hold.end - g.hold.start < 0.06, `${symbol}: closure ${(g.hold.end - g.hold.start).toFixed(3)} s`);
+  }
+});
