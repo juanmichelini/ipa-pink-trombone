@@ -642,7 +642,7 @@ let private burstLevel (index: float) : float =
 // the noise (most at the tongue tip, least at the back) to be heard at about the recordings' level.
 let private voicedBurstLevel (index: float) : float =
     curve
-        [ (13.5, 0.18); (24.5, 0.24); (29.5, 0.36); (33.0, 0.588); (39.0, 0.588); (40.0, 0.72); (42.0, 0.96); (43.5, 1.2) ]
+        [ (13.5, 0.288); (24.5, 0.384); (29.5, 0.576); (33.0, 0.588); (39.0, 0.588); (40.0, 0.72); (42.0, 1.536); (43.5, 1.92) ]
         index
 
 // A tongue-tip release does not open at one point: it peels away from the ridge backward along the blade,

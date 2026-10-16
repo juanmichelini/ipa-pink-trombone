@@ -82,7 +82,7 @@ let run (v: Voice) (out: float32[]) (offset: int) (count: int) : unit =
         let aspirate = filterSample v.Aspirate (nextFloat v.Rng * 2.0 - 1.0)
         let hiss = filterSample v.Fricative (nextFloat v.Rng * 2.0 - 1.0)
         let source = Glottal.step g aspirate
-        let turbulence = hiss * noiseModulator g
+        let turbulence = hiss * frictionModulator g
         Tracts.step t source turbulence lambda1
         let first = t.LipOutput + t.NoseOutput
         Tracts.step t source turbulence lambda2
