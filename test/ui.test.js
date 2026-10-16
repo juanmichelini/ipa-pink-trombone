@@ -157,3 +157,14 @@ test('f and ɱ draw the lower lip against the teeth, m draws it against the uppe
   assert.ok(lowest(shapeFor('ɱ')) < shapeFor('ɱ').n - 1, 'ɱ closes behind the lips, at the teeth');
   assert.ok(lowest(shapeFor('f')) < shapeFor('f').n - 1, 'f closes at the teeth');
 });
+
+// Pressing and sliding on a picture must never select the text near it (labels, the page).
+test('the instruments cannot be selected by pressing and sliding on them', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../css/site.css', import.meta.url), 'utf8');
+  for (const selector of ['.place-axis', 'svg.vowel-chart', 'button']) {
+    const rule = css.split('\n').find((line) => line.trimStart().startsWith(selector + ' {') && /user-select: none/.test(line));
+    assert.ok(rule, `${selector} has user-select: none`);
+  }
+  assert.match(css, /\.place-axis text \{[^}]*user-select: none/);
+});
