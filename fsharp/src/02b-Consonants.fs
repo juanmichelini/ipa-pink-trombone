@@ -391,6 +391,9 @@ let private glide (t: float) (change: Change) (timeline: Timeline) : Timeline =
 module private Timing =
     let leadCarrier = 0.1 // carrier vowel before the consonant
     let leadNone = 0.03
+    let quickLead = 0.005 // a voiceless stop on its own: the closure is silent, so it is kept short
+    let quickClose = 0.02
+    let quickHold = 0.02
     let leadAlone = 0.04 // voice before a tap pressed on its own
     let afterAlone = 0.04
     let close = 0.07 // articulators moving into position
@@ -494,6 +497,8 @@ type private Ctx =
       WithVowel: bool
       /// A tap pressed on its own: it gets a breath of voice either side, not a whole vowel.
       Alone: bool
+      /// A voiceless stop pressed on its own: silent while shut, so quick (see `aloneBurst`).
+      Quick: bool
       Lead: float
       Base: Frame }
 
@@ -510,6 +515,12 @@ let private aloneHiss (index: float) : float =
         [ (13.5, 3.2); (19.5, 2.8); (24.5, 1.7); (29.5, 1.8); (33.0, 1.0); (39.0, 1.0); (40.0, 3.2); (42.0, 19.0)
           (43.5, 12.6) ]
         index
+
+// How much louder a voiceless stop's burst is made when the stop is on its own, as a multiple of the hiss
+// that makes a sound about as loud as an `s`: a burst is a few milliseconds, so it needs several times that.
+// Chosen so that p t k and the rest peak at about the same level, a little above an `s`.
+let private aloneBurst (index: float) : float =
+    curve [ (13.5, 1.2); (19.5, 1.7); (24.5, 2.4); (29.5, 3.6); (34.5, 5.5); (39.0, 4.8); (43.5, 2.4) ] index
 
 // ### Continuants: fricatives, nasals, approximants, laterals
 //
@@ -667,8 +678,8 @@ let private releaseSlide (index: float) : float =
 let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline * Span =
     let o = x.Opts
     let tr = o.TransitionScale
-    let closeAt = x.Lead + (Timing.close * tr)
-    let releaseAt = closeAt + (Option.defaultValue Timing.stopHold o.HoldFor)
+    let closeAt = x.Lead + (if x.Quick then Timing.quickClose else Timing.close * tr)
+    let releaseAt = closeAt + (Option.defaultValue (if x.Quick then Timing.quickHold else Timing.stopHold) o.HoldFor)
     if c.Symbol = "ʔ" then
         let built =
             tl
@@ -694,7 +705,10 @@ let private stop (c: Consonant) (spec: Spec) (x: Ctx) (tl: Timeline) : Timeline 
             else Timing.votPlain
         let breath = if voiced then 0.0 elif o.Aspirated then 0.9 else 2.0
         let after = if x.WithVowel then Timing.afterCarrier else Timing.afterNone
-        let burst = (if voiced then voicedBurstLevel else burstLevel) (c0Of spec).Index
+        let burst0 = (if voiced then voicedBurstLevel else burstLevel) (c0Of spec).Index
+        let burst =
+            if not x.WithVowel && not voiced then max burst0 (aloneBurst (c0Of spec).Index * aloneHiss (c0Of spec).Index)
+            else burst0
         // A voiced release is quick (the voice carries on through it). A voiceless one lets the gap widen
         // slowly: for about 35 ms it stays narrow enough to hiss, then it is the breath of the aspiration.
         // A voiced release opens the gap in a glide of its own, as the closure does: the recordings take about
@@ -807,9 +821,12 @@ let gestureWith (options: Options) (c: Consonant) : Gesture =
             NoiseHz = 1000.0 }
         |> carrier
     let alone = (kind = Kind.Tap) && Option.isNone options.Carrier
-    let lead = if alone then Timing.leadAlone elif withVowel then Timing.leadCarrier else Timing.leadNone
+    // A voiceless stop pressed on its own is silent while it is shut, so it is made as quick as the recordings'
+    // stops, and the press is the release, not a wait for it.
+    let quick = (kind = Kind.Stop) && Option.isNone options.Carrier && not c.Voiced && c.Symbol <> "ʔ"
+    let lead = if alone then Timing.leadAlone elif withVowel then Timing.leadCarrier elif quick then Timing.quickLead else Timing.leadNone
     let spec = specOf c
-    let ctx = { Opts = options; WithVowel = withVowel; Alone = alone; Lead = lead; Base = baseFrame }
+    let ctx = { Opts = options; WithVowel = withVowel; Alone = alone; Quick = quick; Lead = lead; Base = baseFrame }
     let started =
         Timeline.start baseFrame
         |> Timeline.at lead (fun f ->

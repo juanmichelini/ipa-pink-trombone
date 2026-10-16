@@ -207,3 +207,30 @@ test('a release is a burst of hiss of about the same size at every place', () =>
   const levels = ['p', 't', 'k', 'q'].map(burst);
   assert.ok(Math.max(...levels) / Math.min(...levels) < 12, `bursts range over ${levels.map((x) => x.toFixed(4)).join(', ')}`);
 });
+
+// ## Voiceless stops on their own
+//
+// A voiceless stop is silent while it is shut, so pressed alone it must not make you wait for it, and
+// its burst has to be as loud as a hiss.
+test('a voiceless stop pressed on its own bursts within 80 ms and is about as loud as an s', () => {
+  const sound = (symbol) => {
+    const { samples } = play(symbol, { carrier: null });
+    let pk = 0;
+    for (const v of samples) pk = Math.max(pk, Math.abs(v));
+    let first = 0;
+    while (first < samples.length && Math.abs(samples[first]) < 0.05 * pk) first++;
+    return { pk, first: first / RATE };
+  };
+  const s = sound('s');
+  for (const symbol of ['p', 't', 'k', 'q', 'ʈ', 'c']) {
+    const r = sound(symbol);
+    assert.ok(r.first < 0.08, `${symbol}: first sound at ${r.first.toFixed(3)} s`);
+    assert.ok(r.pk > 0.8 * s.pk && r.pk < 1.6 * s.pk, `${symbol}: peak ${r.pk.toFixed(2)} against s ${s.pk.toFixed(2)}`);
+  }
+});
+
+test('between vowels a voiceless stop keeps its closure', () => {
+  const alone = consonantGesture(consonantBySymbol('t'), { carrier: null });
+  const between = consonantGesture(consonantBySymbol('t'), { carrier: { tongueIndex: 20, tongueDiameter: 3, lips: 1.5 } });
+  assert.ok((between.hold.end - between.hold.start) > (alone.hold.end - alone.hold.start) * 3);
+});
